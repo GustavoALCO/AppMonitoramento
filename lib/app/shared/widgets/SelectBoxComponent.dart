@@ -1,0 +1,83 @@
+import 'package:flutter/material.dart';
+import 'package:monitoramento/app/shared/utils/AppColors.dart';
+
+class Selectboxcomponent<T extends Enum> extends StatelessWidget {
+  final String label;
+  final T? value;
+  final List<T> values;
+  final ValueChanged<T?> onChanged;
+  final String Function(T) labelBuilder;
+  final String? Function(T?)? validator;
+
+  const Selectboxcomponent({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.values,
+    required this.onChanged,
+    required this.labelBuilder,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<T>(
+      // ignore: deprecated_member_use
+      value: value,
+      isExpanded: true,
+      icon: const Icon(Icons.arrow_drop_down),
+      style: const TextStyle(
+        fontSize: 14,
+        color: Colors.black,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: 'Selecione',
+        labelStyle: TextStyle(
+          color: AppColors.secondary,
+          fontWeight: FontWeight.w500,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: AppColors.secondary,
+          fontWeight: FontWeight.w500,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(
+            color: AppColors.secondary,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(
+            color: AppColors.secondary,
+            width: 1,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            color: Colors.red,
+            width: 1,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            color: Colors.red,
+            width: 2,
+          ),
+        ),
+      ),
+      items: values.map((item) {
+        return DropdownMenuItem<T>(
+          value: item,
+          child: Text(labelBuilder(item)),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      validator: validator,
+    );
+  }
+}

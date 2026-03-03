@@ -1,0 +1,15 @@
+enum TipoConstatacao {
+Vegetacao,
+PostesDanificados,
+PostesDesalinhados,
+RedeComCondutoresDesivelados,
+CruzetasDanificadas,
+CruzetasForaDePosicao,
+IsoladoresTipoPinoDesalinhados,
+TransformadorComOxidacao,
+InstalacaoDeEquipamentoSemUso,
+ParaRaiosDanificados,
+EquipamentoSemIdentificacao,
+Subestacao,
+Diversos,
+}

@@ -1,0 +1,5 @@
+enum EvidenciaMode 
+{
+  criar,
+  alterar
+}
