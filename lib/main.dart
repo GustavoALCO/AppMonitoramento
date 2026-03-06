@@ -7,16 +7,25 @@ import 'package:monitoramento/app/modules/Pages/Rotas/RotaPage.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/features/viewmodel/fiscais/view_model_auth.dart';
-import 'package:provider/provider.dart';
 import 'package:monitoramento/core/features/data/fiscais/fiscais_service.dart';
 import 'package:monitoramento/core/network/api_client.dart';
+import 'package:monitoramento/core/services/token_service.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final tokenService = TokenService();
+
+  bool isAuthenticated = await tokenService.verifyJWT();
+
+  runApp(MyApp(isAuthenticated: isAuthenticated));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isAuthenticated;
+
+  const MyApp({super.key, required this.isAuthenticated});
 
   @override
   Widget build(BuildContext context) {
@@ -29,26 +38,41 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Aplicativo para Fiscalização de Campo',
-        initialRoute: '/login',
+        debugShowCheckedModeBanner: false,
+
+        // Define rota inicial automaticamente
+        initialRoute: isAuthenticated ? '/home' : '/login',
+
         routes: {
           '/login': (context) => LoginPage(),
+
           '/home': (context) => Homepage(),
+
           '/rotas': (context) => RotaPage(),
+
           '/revisao': (context) {
             final id = ModalRoute.of(context)!.settings.arguments as int;
             return Revisaopage(id: id);
           },
+
           '/criarEvidencia': (context) {
             final id = ModalRoute.of(context)!.settings.arguments as int;
 
-            return EvidenciasPage(mode: EvidenciaMode.criar, id: id);
+            return EvidenciasPage(
+              mode: EvidenciaMode.criar,
+              rotaId: id,
+            );
           },
+
           '/alterarEvidencia': (context) {
             final model =
                 ModalRoute.of(context)!.settings.arguments as EvidenciaModel;
-                
 
-            return EvidenciasPage(mode: EvidenciaMode.alterar, model: model, id: model.evidenciaRotaId,);
+            return EvidenciasPage(
+              mode: EvidenciaMode.alterar,
+              model: model,
+              rotaId: model.evidenciaRotaId,
+            );
           },
         },
       ),

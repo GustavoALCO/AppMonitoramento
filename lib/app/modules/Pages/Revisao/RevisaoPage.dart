@@ -85,9 +85,6 @@ class _RevisaopageState extends State<Revisaopage> {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (error != null) {
-              return Center(child: Text("Erro: $error"));
-            }
 
             if (revisoes.isEmpty) {
               return const Center(child: Text("Nenhuma evidência encontrada"));

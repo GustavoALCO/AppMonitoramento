@@ -29,8 +29,8 @@ class _LoginPageState extends State<LoginPage> {
     final viewModel = context.read<ViewModelAuth>();
 
     final model = LoginFiscalModel(
-      login: emailController.text,
-      senha: passwordController.text,
+      login: emailController.text.trim(),
+      senha: passwordController.text.trim(),
     );
 
     final success = await viewModel.login(model);

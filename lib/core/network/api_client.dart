@@ -24,6 +24,11 @@ class ApiClient {
     return response.data;
   }
 
+  Future<dynamic> verifyjwt(String endpoint) async {
+    final response = await dio.get(endpoint);
+    return response.statusCode;
+  }
+
   // PATCH
   Future<dynamic> patch(String endpoint, {required Map<String, dynamic> body}) async {
     final response = await dio.patch(endpoint, data: body);

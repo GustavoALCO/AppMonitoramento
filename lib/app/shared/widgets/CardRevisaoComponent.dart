@@ -107,7 +107,7 @@ class CardRevisaoComponent extends StatelessWidget {
                               builder: (_) => EvidenciasPage(
                                 mode: EvidenciaMode.alterar,
                                 model: evidencia,
-                                id: evidencia.evidenciaRotaId,
+                                rotaId: evidencia.rotaId,
                               ),
                             ),
                           );

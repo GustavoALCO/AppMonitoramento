@@ -50,4 +50,11 @@ class FiscaisService
     
     return response;
   }
+
+  Future<bool> verifyJWT() async {
+
+    await _apiClient.verifyjwt(ApiRoutes.login);
+
+    return true;
+  }
 }

@@ -47,7 +47,7 @@ class _RotaPageState extends State<RotaPage> {
       final filtro = GetFiltersRotasModel(
         id: widget.id,
         page: 1,
-        size: 1,
+        size: 10,
       );
 
       final resultado = await _rotasService.getRotas(filtro);

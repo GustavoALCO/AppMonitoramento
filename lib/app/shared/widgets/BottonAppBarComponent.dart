@@ -33,7 +33,7 @@ class Bottomappbarcomponent extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            EvidenciasPage(mode: EvidenciaMode.criar, id: id),
+                            EvidenciasPage(mode: EvidenciaMode.criar, rotaId: id),
                       ),
                     );
                   },

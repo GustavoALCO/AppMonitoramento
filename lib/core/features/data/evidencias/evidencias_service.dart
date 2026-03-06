@@ -43,13 +43,13 @@ class EvidenciasService {
   // Método para criar uma nova evidência
   Future<bool> post(CreateEvidenciasModel data) async {
     // Faz a requisição POST para o endpoint de evidências, passando os dados da nova evidência no corpo da requisição
-    final response = await _apiClient.post(
+    await _apiClient.post(
       ApiRoutes.evidencia,
       body: data.toJson(),
     );
 
     // Retorna a resposta da API
-    return response.statusCode;
+    return true;
   }
 
   Future<bool> patch(UpdateEvidenciasModel data) async {
@@ -58,7 +58,6 @@ class EvidenciasService {
       ApiRoutes.evidencia,
       body: data.toJson(),
     );
-
     // retorna a resposta da API alterar a evidência
     return true;
   }
