@@ -11,19 +11,23 @@ class EvidenciasService {
 
   // Método para obter as evidências com base nos filtros fornecidos
   Future<List<EvidenciaModel>> getEvidencias(
-    int idFiscal,
-    int page,
-    int pageSize,
-  ) async {
-    // Faz a requisição GET para o endpoint de evidências, passando os filtros como query parameters
-    final data = await _apiClient.get(
-      '${ApiRoutes.evidencia}/TodasEvidencias?IdRota=$idFiscal&PageSize=$pageSize&Page=$page',
-    );
+  int idFiscal,
+  int page,
+  int pageSize,
+) async {
 
-    return (data as List)
+  print("Chamando API...");
+
+  dynamic data = await _apiClient.get(
+    '${ApiRoutes.evidencia}/TodasEvidencias?IdRota=$idFiscal&PageSize=$pageSize&Page=$page',
+  );
+
+  print("Quantidades de Evidencias ${data.length}");
+
+  return (data as List)
       .map((json) => EvidenciaModel.fromJson(json))
       .toList();
-  }
+}
 
   Future<List<EvidenciaModel>> getEvidenciasid(int id) async {
     // Faz a requisição GET para o endpoint de evidências, passando os filtros como query parameters

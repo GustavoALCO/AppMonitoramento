@@ -10,6 +10,8 @@ class EvidenciaModel {
   final String imageURL;
   final String endereco;
   final String cep;
+  final double latitude;
+  final double longitude;
   final String horario;
   final TipoConstatacao temaFiscalizacao;
 
@@ -25,6 +27,8 @@ class EvidenciaModel {
     required this.endereco,
     required this.cep,
     required this.horario,
+    required this.latitude,
+    required this.longitude
   });
 
   // Converte JSON da API para objeto Dart
@@ -41,6 +45,8 @@ class EvidenciaModel {
       endereco: json['endereco'],
       cep: json['cep'],
       horario: json['horario'],
+      latitude: json['latitude'],
+      longitude: json['longitude']
     );
   }
 
@@ -58,6 +64,8 @@ class EvidenciaModel {
       'endereco': endereco,
       'cep': cep,
       'horario': horario,
+      'latidude': latitude,
+      'longitude': longitude
     };
   }
 }

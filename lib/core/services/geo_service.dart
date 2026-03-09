@@ -1,8 +1,8 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GeoService {
-  
   Future<Position> takeGeolocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
@@ -24,20 +24,27 @@ class GeoService {
 
   // ignore: non_constant_identifier_names
   Future<Map<String, String?>> TakeAdress(double lat, double lng) async {
-  try {
-    List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
 
-    final place = placemarks.first;
+      final place = placemarks.first;
 
-    return {
-      "endereco": "${place.street}, ${place.subLocality}",
-      "cep": place.postalCode
-    };
-  } catch (_) {
-    return {
-      "endereco": null,
-      "cep": null
-    };
+      return {
+        "endereco": "${place.street}, ${place.subLocality}",
+        "cep": place.postalCode,
+      };
+    } catch (_) {
+      return {"endereco": null, "cep": null};
+    }
+  }
+
+  Future<void> abrirMapa(double lat, double lng) async {
+  final Uri url = Uri.parse(
+    "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=$lat,$lng",
+  );
+
+  if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+    throw Exception('Não foi possível abrir o mapa');
   }
 }
 }

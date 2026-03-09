@@ -58,7 +58,6 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   @override
   void initState() {
     super.initState();
-
     tipoConstatacao = TipoConstatacao.values.first;
     _tokenService = TokenService();
     _imageService = ImageService();
@@ -70,6 +69,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       final model = widget.model!;
 
       enderecoController.text = model.endereco;
+      cepController.text = model.cep;
       alimentadorController.text = model.alimentador ?? "";
       identificadorController.text = model.identificacao ?? "";
       descricaoController.text = model.descricao ?? "";
@@ -126,6 +126,8 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       return false;
     }
 
+    
+
     final createModel = CreateEvidenciasModel(
       rotaId: widget.rotaId,
       fiscalId: await _tokenService.getIdPayload() ?? 0,
@@ -142,6 +144,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
           ? await _imageService.convertImageBase64(pickedFile!)
           : "",
     );
+
 
     return await _service.post(createModel);
   }

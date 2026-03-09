@@ -5,13 +5,15 @@ import 'package:monitoramento/app/modules/Pages/Evidencias/EvidenciasPage.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
+import 'package:monitoramento/core/services/geo_service.dart';
 
 class CardRevisaoComponent extends StatelessWidget {
   final EvidenciaModel evidencia;
   final int count;
   final Function(int id) onDelete;
+  final GeoService _geoService = GeoService();
 
-  const CardRevisaoComponent({
+  CardRevisaoComponent({
     super.key,
     required this.evidencia,
     required this.count,
@@ -116,11 +118,16 @@ class CardRevisaoComponent extends StatelessWidget {
                         case 'delete':
                           _confirmarExclusao(context);
                           break;
+
+                        case 'view':
+                            _geoService.abrirMapa(evidencia.latitude, evidencia.longitude);
+                        break;
                       }
                     },
                     itemBuilder: (context) => const [
                       PopupMenuItem(value: 'edit', child: Text('Editar')),
                       PopupMenuItem(value: 'delete', child: Text('Excluir')),
+                      PopupMenuItem(value: 'view', child: Text('Maps')),
                     ],
                   ),
                 ],
