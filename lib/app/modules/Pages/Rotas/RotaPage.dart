@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/DialogFilterComponent.dart';
@@ -24,17 +23,43 @@ class RotaPage extends StatefulWidget {
 }
 
 class _RotaPageState extends State<RotaPage> {
-  late RotasService _rotasService ;
+  late RotasService _rotasService;
+
+  final ScrollController _scrollController = ScrollController();
+
+  List<RotasModel> rotas = [];
+
+  int paginaAtual = 1;
+  final int pageSize = 5;
 
   bool isLoading = true;
-  List<RotasModel> rotas = [];
+  bool isLoadingMore = false;
+  bool hasMore = true;
+
   String? error;
 
   @override
   void initState() {
     super.initState();
+
     _rotasService = RotasService(ApiClient());
+
     buscarRotas();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !isLoadingMore &&
+          hasMore) {
+        carregarMais();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> buscarRotas() async {
@@ -46,20 +71,49 @@ class _RotaPageState extends State<RotaPage> {
 
       final filtro = GetFiltersRotasModel(
         id: widget.id,
-        page: 1,
-        size: 10,
+        page: paginaAtual,
+        size: pageSize,
       );
 
       final resultado = await _rotasService.getRotas(filtro);
 
       setState(() {
         rotas = resultado;
+        hasMore = resultado.length == pageSize;
         isLoading = false;
       });
     } catch (e) {
       setState(() {
         error = "Erro ao carregar rotas";
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> carregarMais() async {
+    setState(() {
+      isLoadingMore = true;
+    });
+
+    paginaAtual++;
+
+    try {
+      final filtro = GetFiltersRotasModel(
+        id: widget.id,
+        page: paginaAtual,
+        size: pageSize,
+      );
+
+      final resultado = await _rotasService.getRotas(filtro);
+
+      setState(() {
+        rotas.addAll(resultado);
+        hasMore = resultado.length == pageSize;
+        isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingMore = false;
       });
     }
   }
@@ -104,12 +158,8 @@ class _RotaPageState extends State<RotaPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            Expanded(
-              child: _buildContent(),
-            ),
+            Expanded(child: _buildContent()),
           ],
         ),
       ),
@@ -118,23 +168,21 @@ class _RotaPageState extends State<RotaPage> {
 
   Widget _buildContent() {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (error != null) {
-      return Center(
-        child: Text(error!),
-      );
+      return Center(child: Text(error!));
     }
 
     if (rotas.isEmpty) {
-      return const Center(
-        child: Text("Nenhuma rota encontrada"),
-      );
+      return const Center(child: Text("Nenhuma rota encontrada"));
     }
 
-    return ListRotasComponent(rotas: rotas);
+    return ListRotasComponent(
+      rotas: rotas,
+      controller: _scrollController,
+      isLoadingMore: isLoadingMore,
+    );
   }
 }

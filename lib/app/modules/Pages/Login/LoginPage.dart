@@ -56,25 +56,33 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppbarComponent("App de Fiscalização"),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+
+      body:Padding(padding: EdgeInsetsGeometry.all(20),
+      child: Center(
+        child:  SingleChildScrollView(
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/logo.png', height: 190),
             const SizedBox(height: 12),
+
             InputComponent(label: 'Email', controller: emailController),
+
             const SizedBox(height: 12),
+
             InputComponent(
               label: 'Senha',
               obscureText: true,
               controller: passwordController,
             ),
-            SizedBox(height: 24),
+
+            const SizedBox(height: 24),
+
             ButtonLogin(onPressed: login),
           ],
         ),
-      ),
+        ) 
+      ),)  
     );
   }
 }

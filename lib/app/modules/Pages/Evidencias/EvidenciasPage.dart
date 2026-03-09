@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
 import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
@@ -12,7 +13,9 @@ import 'package:monitoramento/core/features/models/evidencias/create_evidencias_
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/features/models/evidencias/update_evidencias_model.dart';
 import 'package:monitoramento/core/network/api_client.dart';
+import 'package:monitoramento/core/services/geo_service.dart';
 import 'package:monitoramento/core/services/image_service.dart';
+import 'package:monitoramento/core/services/internet_service.dart';
 import 'package:monitoramento/core/services/token_service.dart';
 
 class EvidenciasPage extends StatefulWidget {
@@ -35,14 +38,18 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   late EvidenciasService _service;
   late TokenService _tokenService;
   late ImageService _imageService;
+  late GeoService _geoService;
+  late InternetService _internetService;
 
   final enderecoController = TextEditingController();
+  final cepController = TextEditingController();
   final alimentadorController = TextEditingController();
   final identificadorController = TextEditingController();
   final descricaoController = TextEditingController();
 
   String? imageUrl;
   XFile? pickedFile;
+  Position? geo;
 
   late TipoConstatacao tipoConstatacao;
 
@@ -55,6 +62,8 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     tipoConstatacao = TipoConstatacao.values.first;
     _tokenService = TokenService();
     _imageService = ImageService();
+    _geoService = GeoService();
+    _internetService = InternetService();
     _service = EvidenciasService(ApiClient());
 
     if (widget.mode == EvidenciaMode.alterar && widget.model != null) {
@@ -73,6 +82,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   @override
   void dispose() {
     enderecoController.dispose();
+    cepController.dispose();
     alimentadorController.dispose();
     identificadorController.dispose();
     descricaoController.dispose();
@@ -80,101 +90,134 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   }
 
   void _retornarComAtualizacao(bool sucesso) {
-  if (sucesso) {
-    Navigator.popAndPushNamed(
-  context,
-  "/revisao",
-  arguments: widget.rotaId,
-); 
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          widget.mode == EvidenciaMode.criar
-              ? "Erro ao enviar evidência"
-              : "Erro ao atualizar evidência",
+    if (sucesso) {
+      Navigator.pop(context,  sucesso );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.mode == EvidenciaMode.criar
+                ? "Erro ao enviar evidência"
+                : "Erro ao atualizar evidência",
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
   Future<bool> _atualizarEvidencia() async {
-  final updateModel = UpdateEvidenciasModel(
-    id: widget.model!.evidenciaRotaId,
-    descricao: descricaoController.text,
-    tema: tipoConstatacao.index,
-    identificacao: identificadorController.text,
-    endereco: enderecoController.text,
-    alimentador: alimentadorController.text,
-  );
+    final updateModel = UpdateEvidenciasModel(
+      id: widget.model!.evidenciaRotaId,
+      descricao: descricaoController.text,
+      tema: tipoConstatacao.index,
+      identificacao: identificadorController.text,
+      endereco: enderecoController.text,
+      alimentador: alimentadorController.text,
+    );
 
-  return await _service.patch(updateModel);
-}
+    return await _service.patch(updateModel);
+  }
 
   Future<bool> _criarEvidencia() async {
-  final createModel = CreateEvidenciasModel(
-    rotaId: widget.rotaId,
-    fiscalId: await _tokenService.getIdPayload() ?? 0,
-    descricao: descricaoController.text,
-    dataHora: DateTime.now(),
-    tema: tipoConstatacao.index,
-    identificacao: identificadorController.text,
-    endereco: enderecoController.text,
-    cep: "00000-000",
-    latitude: -87,
-    longitude: -98,
-    alimentador: alimentadorController.text,
-    base64: pickedFile != null
-        ? await _imageService.convertImageBase64(pickedFile!)
-        : "",
-  );
+    if (geo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Localização não disponível")),
+      );
+      return false;
+    }
 
-  return await _service.post(createModel);
-}
+    final createModel = CreateEvidenciasModel(
+      rotaId: widget.rotaId,
+      fiscalId: await _tokenService.getIdPayload() ?? 0,
+      descricao: descricaoController.text,
+      dataHora: DateTime.now(),
+      tema: tipoConstatacao.index,
+      identificacao: identificadorController.text,
+      endereco: enderecoController.text,
+      cep: cepController.text,
+      latitude: geo!.latitude,
+      longitude: geo!.longitude,
+      alimentador: alimentadorController.text,
+      base64: pickedFile != null
+          ? await _imageService.convertImageBase64(pickedFile!)
+          : "",
+    );
+
+    return await _service.post(createModel);
+  }
 
   Future<void> _salvarEvidencia() async {
-  setState(() => isLoading = true);
+    setState(() => isLoading = true);
 
-  try {
-    bool sucesso;
+    try {
+      bool sucesso;
 
-    if (widget.mode == EvidenciaMode.criar) {
-      sucesso = await _criarEvidencia();
-    } else {
-      sucesso = await _atualizarEvidencia();
-    }
+      if (widget.mode == EvidenciaMode.criar) {
+        sucesso = await _criarEvidencia();
+      } else {
+        sucesso = await _atualizarEvidencia();
+      }
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    _retornarComAtualizacao(sucesso);
+      _retornarComAtualizacao(sucesso);
+    } catch (e) {
+      if (!mounted) return;
 
-  } catch (e) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Erro: ao enviar")),
-    );
-  } finally {
-    if (mounted) {
-      setState(() => isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Erro: ao enviar")));
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
-}
-
 
   Future<void> _tirarFoto() async {
     final XFile? file = await _imageService.selectCamera();
 
-    if (file != null) {
-      setState(() {
-        pickedFile = file;
-        imageUrl = file.path;
-      });
+    if (file == null) return;
+
+    setState(() {
+      pickedFile = file;
+      imageUrl = file.path;
+    });
+
+    try {
+      await _pegarEndereco();
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Erro ao pegar endereço.\n$e",
+          ),
+        ),
+      );
     }
   }
 
-  
+  Future<void> _pegarEndereco() async {
+    setState(() => isLoading = true);
+
+    try {
+      geo = await _geoService.takeGeolocation();
+      
+      Map<String, String?> adress = {"endereco": null, "cep": null};
+
+      if (await _internetService.temInternet()) {
+        adress = await _geoService.TakeAdress(geo!.latitude, geo!.longitude);
+      }
+
+      enderecoController.text = adress["endereco"] ?? "";
+      cepController.text = adress["cep"] ?? "";
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
 
   void _openImageDialog(Widget imageWidget) {
     showDialog(
@@ -209,22 +252,17 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   }
 
   Widget _buildImage() {
-    /// 📷 Se tirou foto agora
     if (pickedFile != null) {
       return GestureDetector(
         onTap: () {
           _openImageDialog(
-            Image.file(
-              File(pickedFile!.path),
-              fit: BoxFit.contain, // IMPORTANTE
-            ),
+            Image.file(File(pickedFile!.path), fit: BoxFit.contain),
           );
         },
         child: Image.file(File(pickedFile!.path), fit: BoxFit.cover),
       );
     }
 
-    /// 🌐 Se for alterar e tiver imagem da API
     if (widget.mode == EvidenciaMode.alterar &&
         imageUrl != null &&
         imageUrl!.isNotEmpty) {
@@ -316,7 +354,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
             const SizedBox(height: 16),
 
-            InputComponent(label: "CEP", controller: enderecoController),
+            InputComponent(label: "CEP", controller: cepController),
 
             const SizedBox(height: 16),
 
@@ -356,7 +394,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
               iconEnabled: false,
               text: "Cancelar",
               select: false,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context, false),
             ),
 
             const SizedBox(height: 32),

@@ -9,6 +9,7 @@ class EvidenciaModel {
   final String? descricao;
   final String imageURL;
   final String endereco;
+  final String cep;
   final String horario;
   final TipoConstatacao temaFiscalizacao;
 
@@ -22,10 +23,9 @@ class EvidenciaModel {
     required this.descricao,
     required this.imageURL,
     required this.endereco,
+    required this.cep,
     required this.horario,
   });
-
-
 
   // Converte JSON da API para objeto Dart
   factory EvidenciaModel.fromJson(Map<String, dynamic> json) {
@@ -38,7 +38,8 @@ class EvidenciaModel {
       identificacao: json['identificacao'],
       descricao: json['descricao'],
       imageURL: json['imageURL'],
-      endereco: json['enderecoCEP'],
+      endereco: json['endereco'],
+      cep: json['cep'],
       horario: json['horario'],
     );
   }
@@ -55,6 +56,7 @@ class EvidenciaModel {
       'descricao': descricao,
       'imageURL': imageURL,
       'endereco': endereco,
+      'cep': cep,
       'horario': horario,
     };
   }
