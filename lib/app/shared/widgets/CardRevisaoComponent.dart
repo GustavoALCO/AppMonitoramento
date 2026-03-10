@@ -120,8 +120,11 @@ class CardRevisaoComponent extends StatelessWidget {
                           break;
 
                         case 'view':
-                            _geoService.abrirMapa(evidencia.latitude, evidencia.longitude);
-                        break;
+                          _geoService.openMap(
+                            evidencia.latitude,
+                            evidencia.longitude,
+                          );
+                          break;
                       }
                     },
                     itemBuilder: (context) => const [
@@ -158,8 +161,7 @@ class CardRevisaoComponent extends StatelessWidget {
           Center(
             child: Text(
               evidencia.temaFiscalizacao.name.toString(),
-              style: const TextStyle(
-                  fontSize: 19, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
             ),
           ),
 
@@ -171,8 +173,7 @@ class CardRevisaoComponent extends StatelessWidget {
             children: [
               const Text(
                 "Endereço: ",
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               Expanded(
                 child: Text(
@@ -190,13 +191,11 @@ class CardRevisaoComponent extends StatelessWidget {
             children: [
               const Text(
                 "Identificador: ",
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               Expanded(
                 child: Text(
-                  evidencia.identificacao ??
-                      "Sem Identificação no Poste",
+                  evidencia.identificacao ?? "Sem Identificação no Poste",
                   style: const TextStyle(fontSize: 14),
                 ),
               ),
@@ -211,8 +210,7 @@ class CardRevisaoComponent extends StatelessWidget {
             children: [
               const Text(
                 "Descrição: ",
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               Expanded(
                 child: Text(
@@ -234,8 +232,7 @@ class CardRevisaoComponent extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Confirmar exclusão"),
-        content:
-            const Text("Deseja realmente excluir esta evidência?"),
+        content: const Text("Deseja realmente excluir esta evidência?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -249,10 +246,7 @@ class CardRevisaoComponent extends StatelessWidget {
               Navigator.pop(context);
               onDelete(evidencia.evidenciaRotaId);
             },
-            child: const Text(
-              "Excluir",
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

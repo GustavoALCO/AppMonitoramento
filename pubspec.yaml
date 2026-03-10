@@ -10,7 +10,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+    
+  drift: ^2.17.0
+  sqlite3_flutter_libs: ^0.5.20
+  path_provider: ^2.1.2
+  path: ^1.9.0
   cupertino_icons: ^1.0.8
   dio: ^5.9.1
   provider: ^6.1.5+1
@@ -26,6 +30,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  drift_dev: ^2.17.0
+  build_runner: ^2.4.8
   flutter_lints: ^6.0.0
   mocktail: ^1.0.4
 

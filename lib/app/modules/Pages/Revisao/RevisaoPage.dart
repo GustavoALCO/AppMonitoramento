@@ -60,8 +60,11 @@ class _RevisaopageState extends State<Revisaopage> {
       paginaAtual = 1;
       revisoes.clear();
 
-      final response =
-          await _service.getEvidencias(widget.id, paginaAtual, pageSize);
+      final response = await _service.getEvidencias(
+        widget.id,
+        paginaAtual,
+        pageSize,
+      );
 
       setState(() {
         revisoes = response;
@@ -84,9 +87,12 @@ class _RevisaopageState extends State<Revisaopage> {
     paginaAtual++;
 
     try {
-      final response =
-          await _service.getEvidencias(widget.id, paginaAtual, pageSize);
-      
+      final response = await _service.getEvidencias(
+        widget.id,
+        paginaAtual,
+        pageSize,
+      );
+
       setState(() {
         revisoes.addAll(response);
         hasMore = response.length == pageSize;
@@ -114,10 +120,11 @@ class _RevisaopageState extends State<Revisaopage> {
         );
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro: $e")),
-      );
+      
+      ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
+        context,
+      ).showSnackBar(SnackBar(content: Text("Erro: $e")));
     }
   }
 
@@ -136,7 +143,7 @@ class _RevisaopageState extends State<Revisaopage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppbarComponent("Revisão"),
+      appBar: AppbarComponent("Revisão", false),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Builder(
@@ -146,9 +153,7 @@ class _RevisaopageState extends State<Revisaopage> {
             }
 
             if (revisoes.isEmpty) {
-              return const Center(
-                child: Text("Nenhuma evidência encontrada"),
-              );
+              return const Center(child: Text("Nenhuma evidência encontrada"));
             }
 
             return ListRevisaoComponent(
@@ -163,8 +168,8 @@ class _RevisaopageState extends State<Revisaopage> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: _abrirCriarEvidencia,
-        backgroundColor: AppColors.lightGrey,
-        child: const Icon(Icons.add, color: AppColors.secondary,),
+        backgroundColor: AppColors.cards,
+        child: const Icon(Icons.add, color: AppColors.secondary),
       ),
     );
   }

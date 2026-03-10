@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ImageService {
   final ImagePicker _imagePicker = ImagePicker();
@@ -16,6 +18,17 @@ class ImageService {
     return pickedFile; 
   }
 
+  Future<String> salvarImagemLocal(XFile file) async {
+  final directory = await getApplicationDocumentsDirectory();
+
+  final nomeArquivo = "${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+  final novoCaminho = join(directory.path, nomeArquivo);
+
+  final File novaImagem = await File(file.path).copy(novoCaminho);
+
+  return novaImagem.path;
+}
 
   Future<String> convertImageBase64(XFile pickerFile) async
   {

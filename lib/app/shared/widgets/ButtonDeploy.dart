@@ -23,9 +23,9 @@ class Buttondeploy extends StatelessWidget {
         elevation: 6,
         shadowColor: Colors.black,
         backgroundColor:
-            select ? AppColors.secondary : AppColors.lightGrey,
+            select ? AppColors.secondary : AppColors.cards,
         foregroundColor:
-            select ? AppColors.lightGrey : AppColors.secondary,
+            select ? AppColors.cards : AppColors.secondary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),

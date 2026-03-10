@@ -16,13 +16,9 @@ class EvidenciasService {
   int pageSize,
 ) async {
 
-  print("Chamando API...");
-
-  dynamic data = await _apiClient.get(
-    '${ApiRoutes.evidencia}/TodasEvidencias?IdRota=$idFiscal&PageSize=$pageSize&Page=$page',
-  );
-
-  print("Quantidades de Evidencias ${data.length}");
+dynamic data = await _apiClient.get(
+  '${ApiRoutes.evidencia}/TodasEvidencias?IdRota=$idFiscal&PageSize=$pageSize&Page=$page',
+);
 
   return (data as List)
       .map((json) => EvidenciaModel.fromJson(json))

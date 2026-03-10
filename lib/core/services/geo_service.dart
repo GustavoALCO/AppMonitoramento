@@ -38,7 +38,7 @@ class GeoService {
     }
   }
 
-  Future<void> abrirMapa(double lat, double lng) async {
+  Future<void> openMap(double lat, double lng) async {
   final Uri url = Uri.parse(
     "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=$lat,$lng",
   );

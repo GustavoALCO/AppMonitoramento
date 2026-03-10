@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
-import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ButtonLogin.dart';
 import 'package:monitoramento/app/shared/widgets/InputComponent.dart';
 import 'package:monitoramento/core/features/models/fiscais/login_fiscal_model.dart';
@@ -44,7 +43,8 @@ class _LoginPageState extends State<LoginPage> {
         const SnackBar(
           content: Text(
             'Falha no login. Verifique suas credenciais.',
-            style: TextStyle(color: AppColors.lightGrey),
+            style: TextStyle(color: AppColors.cards),
+            
           ),
           backgroundColor: AppColors.secondary,
         ),
@@ -55,7 +55,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppbarComponent("App de Fiscalização"),
 
       body:Padding(padding: EdgeInsetsGeometry.all(20),
       child: Center(
@@ -63,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/logo.png', height: 190),
+            Image.asset('assets/images/logo.png', height: 190,),
             const SizedBox(height: 12),
 
             InputComponent(label: 'Email', controller: emailController),

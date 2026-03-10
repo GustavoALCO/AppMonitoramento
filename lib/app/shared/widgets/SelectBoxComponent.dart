@@ -22,17 +22,17 @@ class Selectboxcomponent<T extends Enum> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      // ignore: deprecated_member_use
-      value: value,
+      initialValue: value,
       isExpanded: true,
       icon: const Icon(Icons.arrow_drop_down),
-      style: const TextStyle(
-        fontSize: 14,
-        color: Colors.black,
-      ),
+      style: const TextStyle(fontSize: 14, color: Colors.black),
       decoration: InputDecoration(
         labelText: label,
         hintText: 'Selecione',
+
+        filled: true,
+        fillColor: AppColors.cards,
+
         labelStyle: TextStyle(
           color: AppColors.secondary,
           fontWeight: FontWeight.w500,
@@ -41,33 +41,25 @@ class Selectboxcomponent<T extends Enum> extends StatelessWidget {
           color: AppColors.secondary,
           fontWeight: FontWeight.w500,
         ),
+
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: AppColors.secondary,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: AppColors.secondary, width: 1),
         ),
+
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: AppColors.secondary,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: AppColors.secondary, width: 1),
         ),
+
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
         ),
+
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
       ),
       items: values.map((item) {

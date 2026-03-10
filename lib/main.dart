@@ -38,6 +38,10 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Aplicativo para Fiscalização de Campo',
+        theme: ThemeData(
+          scaffoldBackgroundColor: const Color.fromARGB(232, 255, 252, 240),
+        ),
+        
         debugShowCheckedModeBanner: false,
 
         // Define rota inicial automaticamente

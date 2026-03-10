@@ -121,7 +121,7 @@ class _RotaPageState extends State<RotaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppbarComponent(widget.title),
+      appBar: AppbarComponent(widget.title, false),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -130,7 +130,7 @@ class _RotaPageState extends State<RotaPage> {
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.lightGrey,
+                  backgroundColor: AppColors.cards,
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

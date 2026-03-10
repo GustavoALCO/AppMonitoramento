@@ -24,19 +24,17 @@ class InputComponent extends StatelessWidget {
           color: AppColors.secondary,
           fontWeight: FontWeight.w500,
         ),
+
+        filled: true, // ativa o background
+        fillColor: AppColors.cards, // cor de fundo
+
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Colors.grey.shade400,
-          ),
+          borderSide: BorderSide(color: AppColors.cards),
         ),
         focusedBorder: OutlineInputBorder(
-          
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: const Color.fromARGB(255, 0, 0, 0),
-            width: 1,
-          ),
+          borderSide: BorderSide(color: AppColors.secondary, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 12,

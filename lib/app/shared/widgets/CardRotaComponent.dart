@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monitoramento/app/shared/utils/AppColors.dart';
 
 class CardRotaComponent extends StatelessWidget {
   final String nomeRota;
@@ -20,6 +21,7 @@ class CardRotaComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
+      color: AppColors.cards,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
