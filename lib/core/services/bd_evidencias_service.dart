@@ -1,4 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
+import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/enums/enumsharedMode.dart';
 import 'package:monitoramento/data/database/app_database.dart';
 
 class BdEvidenciasService {
@@ -8,6 +11,12 @@ class BdEvidenciasService {
     await (database.delete(
       database.evidenciastable,
     )..where((tbl) => tbl.idEvi.isBiggerOrEqualValue(1))).go();
+  }
+
+  Future<void> alterarStatus(int id, StatusMode statusRecibe) async {
+    await (database.update(database.evidenciastable)
+          ..where((tbl) => tbl.idEvi.equals(id)))
+        .write(EvidenciastableCompanion(status: Value(statusRecibe)));
   }
 
   Future<void> alterarEvidencia(
@@ -35,21 +44,30 @@ class BdEvidenciasService {
         alimentador: alimentador != null
             ? Value(alimentador)
             : const Value.absent(),
+
+        status: const Value(StatusMode.local),
+        action: const Value(SharedMode.update),
       ),
     );
   }
 
-  Future<void> criarEvidencia(
-    int idRota,
-    int idFiscal,
-    String cep,
-    String image,
-    double lat,
-    double long,
-    String endereco,
-    String descricao,
-  ) async {
-    await database
+ Future<void> criarEvidencia(
+  int idRota,
+  int idFiscal,
+  String cep,
+  String image,
+  double lat,
+  double long,
+  String endereco,
+  String descricao,
+  String alimentador,
+  String identificacao,
+  TipoConstatacao tema
+) async {
+
+  try {
+
+    final id = await database
         .into(database.evidenciastable)
         .insert(
           EvidenciastableCompanion(
@@ -62,17 +80,54 @@ class BdEvidenciasService {
             long: Value(long),
             endereco: Value(endereco),
             descricao: Value(descricao),
-            status: const Value(false),
+            status: Value(StatusMode.local),
+            action: Value(SharedMode.create),
+            alimentador: Value(alimentador),
+            identificacao: Value(identificacao),
+            tema: Value(tema),
           ),
         );
+
+    print("Evidencia inserida ID: $id");
+
+    final lista = await database.select(database.evidenciastable).get();
+
+    print("TOTAL NO BANCO: ${lista.length}");
+
+  } catch(ex, d) {
+    print("Erro ao adicionar evidencia ao Banco de dados. $ex");
+    print(d);
   }
+}
 
   Future<List<EvidenciastableData>> buscarEvidenciasID(int idRota) async {
-    final evidencias = await (database.select(
-      database.evidenciastable,
-    )..where((tbl) => tbl.idRota.equals(idRota))).get();
+  final evidencias = await (database.select(
+    database.evidenciastable,
+  )..where((tbl) => tbl.idRota.equals(idRota))).get();
+
+  return evidencias;
+}
+
+  Future<List<EvidenciastableData>> buscarEvidencias() async {
+    final evidencias = await (database.select(database.evidenciastable).get());
 
     return evidencias;
+  }
+
+  Future<List<EvidenciastableData>> buscarEvidenciasPagina(
+    int idRota,
+    int page,
+    int pageSize,
+  ) async {
+    final offset = (page - 1) * pageSize;
+
+    final envidencias =
+        await (database.select(database.evidenciastable)
+              ..where((x) => x.idRota.equals(idRota))
+              ..limit(pageSize, offset: offset))
+            .get();
+
+    return envidencias;
   }
 
   Future<void> excluirEvidencia(int idEvi) async {

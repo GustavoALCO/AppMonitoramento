@@ -1,14 +1,17 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unnecessary_underscores
+
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/modules/Pages/Evidencias/EvidenciasPage.dart';
+import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
+import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
-import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/services/geo_service.dart';
 
 class CardRevisaoComponent extends StatelessWidget {
-  final EvidenciaModel evidencia;
+  final EvidenciaCardDto evidencia;
   final int count;
   final Function(int id) onDelete;
   final GeoService _geoService = GeoService();
@@ -145,13 +148,19 @@ class CardRevisaoComponent extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             child: AspectRatio(
               aspectRatio: 16 / 9,
-              child: Image.network(
-                evidencia.imageURL,
-                fit: BoxFit.cover,
-                // ignore: unnecessary_underscores
-                errorBuilder: (_, __, ___) =>
-                    const Center(child: Icon(Icons.image_not_supported)),
-              ),
+              child: evidencia.status.index == StatusMode.local.index
+                  ? Image.file(
+                      File(evidencia.image),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Center(child: Icon(Icons.image_not_supported)),
+                    )
+                  : Image.network(
+                      evidencia.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Center(child: Icon(Icons.image_not_supported)),
+                    ),
             ),
           ),
 
@@ -160,7 +169,7 @@ class CardRevisaoComponent extends StatelessWidget {
           /// TEMA
           Center(
             child: Text(
-              evidencia.temaFiscalizacao.name.toString(),
+              evidencia.tema.name.toString(),
               style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
             ),
           ),
@@ -244,7 +253,7 @@ class CardRevisaoComponent extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              onDelete(evidencia.evidenciaRotaId);
+              onDelete(evidencia.rotaId);
             },
             child: const Text("Excluir", style: TextStyle(color: Colors.red)),
           ),

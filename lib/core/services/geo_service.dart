@@ -30,7 +30,8 @@ class GeoService {
       final place = placemarks.first;
 
       return {
-        "endereco": "${place.street}, ${place.subLocality}",
+        //Busca endereço e Numero
+        "endereco": "${place.street}, ${place.subThoroughfare}",
         "cep": place.postalCode,
       };
     } catch (_) {

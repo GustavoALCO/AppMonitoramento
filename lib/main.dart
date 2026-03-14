@@ -4,11 +4,12 @@ import 'package:monitoramento/app/modules/Pages/Home/HomePage.dart';
 import 'package:monitoramento/app/modules/Pages/Login/LoginPage.dart';
 import 'package:monitoramento/app/modules/Pages/Revisao/RevisaoPage.dart';
 import 'package:monitoramento/app/modules/Pages/Rotas/RotaPage.dart';
+import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
-import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/features/viewmodel/fiscais/view_model_auth.dart';
 import 'package:monitoramento/core/features/data/fiscais/fiscais_service.dart';
 import 'package:monitoramento/core/network/api_client.dart';
+import 'package:monitoramento/core/services/sync_service.dart';
 import 'package:monitoramento/core/services/token_service.dart';
 import 'package:provider/provider.dart';
 
@@ -17,8 +18,10 @@ void main() async {
 
   final tokenService = TokenService();
 
-  bool isAuthenticated = await tokenService.verifyJWT();
 
+  bool isAuthenticated = await tokenService.verifyJWT();
+  SyncService.instance.start();
+  
   runApp(MyApp(isAuthenticated: isAuthenticated));
 }
 
@@ -70,12 +73,12 @@ class MyApp extends StatelessWidget {
 
           '/alterarEvidencia': (context) {
             final model =
-                ModalRoute.of(context)!.settings.arguments as EvidenciaModel;
+                ModalRoute.of(context)!.settings.arguments as EvidenciaCardDto;
 
             return EvidenciasPage(
               mode: EvidenciaMode.alterar,
               model: model,
-              rotaId: model.evidenciaRotaId,
+              rotaId: model.id,
             );
           },
         },

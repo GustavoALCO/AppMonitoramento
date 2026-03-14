@@ -2,17 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
 import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
+import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ButtonDeploy.dart';
 import 'package:monitoramento/app/shared/widgets/InputComponent.dart';
 import 'package:monitoramento/app/shared/widgets/SelectBoxComponent.dart';
-import 'package:monitoramento/core/features/data/evidencias/evidencias_service.dart';
-import 'package:monitoramento/core/features/models/evidencias/create_evidencias_model.dart';
-import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
-import 'package:monitoramento/core/features/models/evidencias/update_evidencias_model.dart';
-import 'package:monitoramento/core/network/api_client.dart';
 import 'package:monitoramento/core/services/bd_evidencias_service.dart';
 import 'package:monitoramento/core/services/geo_service.dart';
 import 'package:monitoramento/core/services/image_service.dart';
@@ -22,7 +19,7 @@ import 'package:monitoramento/core/services/token_service.dart';
 class EvidenciasPage extends StatefulWidget {
   final EvidenciaMode mode;
   final int rotaId;
-  final EvidenciaModel? model;
+  final EvidenciaCardDto? model;
 
   const EvidenciasPage({
     super.key,
@@ -36,7 +33,6 @@ class EvidenciasPage extends StatefulWidget {
 }
 
 class _EvidenciasPageState extends State<EvidenciasPage> {
-  late EvidenciasService _service;
   late TokenService _tokenService;
   late ImageService _imageService;
   late GeoService _geoService;
@@ -59,30 +55,36 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   bool isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    tipoConstatacao = TipoConstatacao.values.first;
-    _tokenService = TokenService();
-    _imageService = ImageService();
-    _geoService = GeoService();
-    _internetService = InternetService();
-    _bdEvidenciasService = BdEvidenciasService();
+void initState() {
+  super.initState();
+  _init();
+}
 
-    _service = EvidenciasService(ApiClient());
+Future<void> _init() async {
+  tipoConstatacao = TipoConstatacao.values.first;
+  _tokenService = TokenService();
+  _imageService = ImageService();
+  _geoService = GeoService();
+  _internetService = InternetService();
+  _bdEvidenciasService = BdEvidenciasService();
 
-    if (widget.mode == EvidenciaMode.alterar && widget.model != null) {
-      final model = widget.model!;
+  if (widget.mode == EvidenciaMode.alterar && widget.model != null) {
+    final model = widget.model!;
 
-      enderecoController.text = model.endereco;
-      cepController.text = model.cep;
-      alimentadorController.text = model.alimentador ?? "";
-      identificadorController.text = model.identificacao ?? "";
-      descricaoController.text = model.descricao ?? "";
+    enderecoController.text = model.endereco;
+    alimentadorController.text = model.alimentador ?? "";
+    identificadorController.text = model.identificacao ?? "";
+    descricaoController.text = model.descricao ?? "";
 
-      tipoConstatacao = model.temaFiscalizacao;
-      imageUrl = model.imageURL;
+    tipoConstatacao = model.tema;
+
+    if (model.status.index == StatusMode.local.index) {
+      pathImage = model.image;
+    } else {
+      imageUrl = model.image;
     }
   }
+}
 
   @override
   void dispose() {
@@ -102,7 +104,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
         SnackBar(
           content: Text(
             widget.mode == EvidenciaMode.criar
-                ? "Erro ao enviar evidência"
+                ? "Erro ao enviar "
                 : "Erro ao atualizar evidência",
           ),
         ),
@@ -110,128 +112,79 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     }
   }
 
-  Future<bool> _atualizarEvidencia() async {
-    final updateModel = UpdateEvidenciasModel(
-      id: widget.model!.evidenciaRotaId,
-      descricao: descricaoController.text,
-      tema: tipoConstatacao.index,
-      identificacao: identificadorController.text,
-      endereco: enderecoController.text,
-      alimentador: alimentadorController.text,
-    );
+ Future<void> _salvarEvidencia() async {
+  setState(() => isLoading = true);
 
-    return await _service.patch(updateModel);
-  }
+  try {    
 
-  Future<bool> _criarEvidencia() async {
-    if (geo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Localização não disponível")),
+    if(widget.mode.index == EvidenciaMode.criar.index)
+    {
+       await _bdEvidenciasService.criarEvidencia(
+        widget.rotaId,
+        await _tokenService.getIdPayload() ?? 0,
+        cepController.text,
+        pathImage ?? "",
+        geo!.latitude,
+        geo!.longitude,
+        enderecoController.text,
+        descricaoController.text,
+        alimentadorController.text,
+        identificadorController.text,
+        tipoConstatacao
       );
-      return false;
+    }
+    else {
+      await _bdEvidenciasService.alterarEvidencia(
+        widget.model!.id,
+        descricaoController.text,
+        cepController.text,
+        enderecoController.text,
+        identificadorController.text,
+        alimentadorController.text,
+
+      );
     }
 
-    final createModel = CreateEvidenciasModel(
-      rotaId: widget.rotaId,
-      fiscalId: await _tokenService.getIdPayload() ?? 0,
-      descricao: descricaoController.text,
-      dataHora: DateTime.now(),
-      tema: tipoConstatacao.index,
-      identificacao: identificadorController.text,
-      endereco: enderecoController.text,
-      cep: cepController.text,
-      latitude: geo!.latitude,
-      longitude: geo!.longitude,
-      alimentador: alimentadorController.text,
-      base64: pickedFile != null
-          ? await _imageService.convertImageBase64(pickedFile!)
-          : "",
+    if (!mounted) return;
+
+    _retornarComAtualizacao(true);
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Erro ao salvar evidência")),
     );
-
-    return await _service.post(createModel);
-  }
-
-  Future<void> _salvarEvidencia() async {
-    setState(() => isLoading = true);
-    if (await _internetService.temInternet()) {
-      try {
-        bool sucesso;
-
-        if (widget.mode == EvidenciaMode.criar) {
-          sucesso = await _criarEvidencia();
-        } else {
-          sucesso = await _atualizarEvidencia();
-        }
-
-        if (!mounted) return;
-
-        _retornarComAtualizacao(sucesso);
-      } catch (e) {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Erro: ao enviar")));
-      } finally {
-        if (mounted) {
-          setState(() => isLoading = false);
-        }
-      }
-    } else {
-      if (widget.mode == EvidenciaMode.criar) {
-        if (pickedFile != null) {
-          pathImage = await _imageService.salvarImagemLocal(pickedFile!);
-
-          false;
-        }
-
-        _bdEvidenciasService.criarEvidencia(
-          widget.rotaId,
-          await _tokenService.getIdPayload() ?? 0,
-          cepController.text,
-          pathImage ?? "",
-          geo!.latitude,
-          geo!.longitude,
-          enderecoController.text,
-          descricaoController.text,
-        );
-
-        _retornarComAtualizacao(true);
-      } else {
-        _bdEvidenciasService.alterarEvidencia(
-          widget.model!.evidenciaRotaId,
-          descricaoController.text,
-          cepController.text,
-          enderecoController.text,
-          identificadorController.text,
-          alimentadorController.text,
-        );
-
-        _retornarComAtualizacao(true);
-      }
+  } finally {
+    if (mounted) {
+      setState(() => isLoading = false);
     }
   }
+}
+ Future<void> _tirarFoto() async {
+  final XFile? file = await _imageService.selectCamera();
 
-  Future<void> _tirarFoto() async {
-    final XFile? file = await _imageService.selectCamera();
+  if (file == null) return;
 
-    if (file == null) return;
+  setState(() {
+    pickedFile = file;
+  });
 
-    setState(() {
-      pickedFile = file;
-      imageUrl = file.path;
-    });
+  try {
+    // Pega coordenadas e endereço automaticamente caso tenha internet
+    await _pegarEndereco();
 
-    try {
-      await _pegarEndereco();
-    } catch (e) {
-      
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text("Erro ao pegar endereço.\n$e")));
-    }
+    // Salva local e converte em Base64
+    pathImage = await _imageService.salvarImagemLocal(file);
+
+    imageUrl = await _imageService.convertImageBase64(pathImage!);
+    
+  } catch (e) {
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Erro ao pegar endereço ou salvar imagem.\n$e")),
+    );
   }
+}
 
   Future<void> _pegarEndereco() async {
     setState(() => isLoading = true);
@@ -312,6 +265,24 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
             if (loadingProgress == null) return child;
             return const Center(child: CircularProgressIndicator());
           },
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Icon(Icons.broken_image, size: 60, color: Colors.grey),
+            );
+          },
+        ),
+      );
+    }
+    else if (widget.mode == EvidenciaMode.alterar &&
+        pathImage != null &&
+        pathImage!.isNotEmpty) {
+      return GestureDetector(
+        onTap: () {
+          _openImageDialog(Image.file(File(pathImage!), fit: BoxFit.contain));
+        },
+        child: Image.file(
+          File(pathImage!),
+          fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return const Center(
               child: Icon(Icons.broken_image, size: 60, color: Colors.grey),

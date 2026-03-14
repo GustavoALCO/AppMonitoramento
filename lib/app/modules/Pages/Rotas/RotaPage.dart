@@ -7,13 +7,10 @@ import 'package:monitoramento/core/features/data/rotas/rotas_service.dart';
 import 'package:monitoramento/core/features/models/rotas/get_filters_rotas_model.dart';
 import 'package:monitoramento/core/features/models/rotas/rotas_model.dart';
 import 'package:monitoramento/core/network/api_client.dart';
+import 'package:monitoramento/core/services/bd_rota_service.dart';
 
 class RotaPage extends StatefulWidget {
-  const RotaPage({
-    super.key,
-    this.title = "Rotas",
-    this.id = 4,
-  });
+  const RotaPage({super.key, this.title = "Rotas", this.id = 4});
 
   final String title;
   final int id;
@@ -24,7 +21,7 @@ class RotaPage extends StatefulWidget {
 
 class _RotaPageState extends State<RotaPage> {
   late RotasService _rotasService;
-
+  late BdRotaService _bdRotaService;
   final ScrollController _scrollController = ScrollController();
 
   List<RotasModel> rotas = [];
@@ -43,7 +40,7 @@ class _RotaPageState extends State<RotaPage> {
     super.initState();
 
     _rotasService = RotasService(ApiClient());
-
+    _bdRotaService = BdRotaService();
     buscarRotas();
 
     _scrollController.addListener(() {
@@ -63,60 +60,141 @@ class _RotaPageState extends State<RotaPage> {
   }
 
   Future<void> buscarRotas() async {
-    try {
+  setState(() {
+    isLoading = true;
+    error = null;
+  });
+
+  try {
+    final filtro = GetFiltersRotasModel(
+      id: widget.id,
+      page: paginaAtual,
+      size: pageSize,
+    );
+
+    final resultadoApi = await _rotasService.getRotas(filtro);
+
+    /// API trouxe dados
+    if (resultadoApi.isNotEmpty) {
       setState(() {
-        isLoading = true;
-        error = null;
-      });
-
-      final filtro = GetFiltersRotasModel(
-        id: widget.id,
-        page: paginaAtual,
-        size: pageSize,
-      );
-
-      final resultado = await _rotasService.getRotas(filtro);
-
-      setState(() {
-        rotas = resultado;
-        hasMore = resultado.length == pageSize;
+        rotas = resultadoApi;
+        hasMore = resultadoApi.length == pageSize;
         isLoading = false;
       });
-    } catch (e) {
-      setState(() {
-        error = "Erro ao carregar rotas";
-        isLoading = false;
-      });
+
+      return;
     }
+
+  } catch (_, m) {
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Erro ao buscar mais rotas. $m",
+            style: const TextStyle(color: AppColors.cards),
+          ),
+          backgroundColor: AppColors.secondary,
+        ),
+      );
   }
+
+  final resultadoLocal = await _bdRotaService.buscarRotas(
+    paginaAtual,
+    pageSize,
+  );
+
+  setState(() {
+    rotas = resultadoLocal
+        .map((r) => RotasModel(
+              id: r.idRota,
+              alimentador: r.alimentador,
+              nome: r.nomeRota,
+              dataInicio: r.dataInicio,
+            ))
+        .toList();
+
+    hasMore = resultadoLocal.length == pageSize;
+    isLoading = false;
+  });
+}
 
   Future<void> carregarMais() async {
+
+  if (isLoadingMore || !hasMore) return;
+
+  setState(() {
+    isLoadingMore = true;
+  });
+
+  final proximaPagina = paginaAtual + 1;
+
+  try {
+    final filtro = GetFiltersRotasModel(
+      id: widget.id,
+      page: proximaPagina,
+      size: pageSize,
+    );
+
+    final resultado = await _rotasService.getRotas(filtro);
+
+    if (resultado.isEmpty) {
+      final local = await _bdRotaService.buscarRotas(proximaPagina, pageSize);
+
+      if (local.isEmpty) {
+        setState(() {
+          hasMore = false; // 🔒 trava chamadas
+          isLoadingMore = false;
+        });
+        return;
+      }
+
+      setState(() {
+        paginaAtual = proximaPagina;
+        rotas.addAll(local.map((r) => RotasModel(
+              id: r.idRota,
+              alimentador: r.alimentador,
+              nome: r.nomeRota,
+              dataInicio: r.dataInicio,
+            )));
+        hasMore = local.length == pageSize;
+        isLoadingMore = false;
+      });
+
+      return;
+    }
+
     setState(() {
-      isLoadingMore = true;
+      paginaAtual = proximaPagina;
+      rotas.addAll(resultado);
+      hasMore = resultado.length == pageSize;
+      isLoadingMore = false;
     });
 
-    paginaAtual++;
+  } catch (e) {
 
-    try {
-      final filtro = GetFiltersRotasModel(
-        id: widget.id,
-        page: paginaAtual,
-        size: pageSize,
-      );
+    final local = await _bdRotaService.buscarRotas(proximaPagina, pageSize);
 
-      final resultado = await _rotasService.getRotas(filtro);
-
+    if (local.isEmpty) {
       setState(() {
-        rotas.addAll(resultado);
-        hasMore = resultado.length == pageSize;
+        hasMore = false;
         isLoadingMore = false;
       });
-    } catch (e) {
-      setState(() {
-        isLoadingMore = false;
-      });
+      return;
     }
+
+    setState(() {
+      paginaAtual = proximaPagina;
+      rotas.addAll(local.map((r) => RotasModel(
+            id: r.idRota,
+            alimentador: r.alimentador,
+            nome: r.nomeRota,
+            dataInicio: r.dataInicio,
+          )));
+      hasMore = local.length == pageSize;
+      isLoadingMore = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {

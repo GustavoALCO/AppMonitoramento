@@ -4,6 +4,7 @@ import 'package:monitoramento/app/shared/widgets/ButtonLogin.dart';
 import 'package:monitoramento/app/shared/widgets/InputComponent.dart';
 import 'package:monitoramento/core/features/models/fiscais/login_fiscal_model.dart';
 import 'package:monitoramento/core/features/viewmodel/fiscais/view_model_auth.dart';
+import 'package:monitoramento/core/services/bd_rota_service.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,6 +17,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final BdRotaService _bdRotaService = BdRotaService();
 
   @override
   void dispose() {
@@ -35,6 +37,9 @@ class _LoginPageState extends State<LoginPage> {
     final success = await viewModel.login(model);
 
     if (success == true) {
+      //Exclui todas as rotas salvas no banco de dados se o usuario entrar no login
+      _bdRotaService.excluirTodasRotas();
+
       // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, '/home');
     } else {
@@ -44,7 +49,6 @@ class _LoginPageState extends State<LoginPage> {
           content: Text(
             'Falha no login. Verifique suas credenciais.',
             style: TextStyle(color: AppColors.cards),
-            
           ),
           backgroundColor: AppColors.secondary,
         ),
@@ -55,33 +59,34 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: Padding(
+        padding: EdgeInsetsGeometry.all(20),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/logo.png', height: 190),
+                const SizedBox(height: 12),
 
-      body:Padding(padding: EdgeInsetsGeometry.all(20),
-      child: Center(
-        child:  SingleChildScrollView(
-          child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/logo.png', height: 190,),
-            const SizedBox(height: 12),
+                InputComponent(label: 'Email', controller: emailController),
 
-            InputComponent(label: 'Email', controller: emailController),
+                const SizedBox(height: 12),
 
-            const SizedBox(height: 12),
+                InputComponent(
+                  label: 'Senha',
+                  obscureText: true,
+                  controller: passwordController,
+                ),
 
-            InputComponent(
-              label: 'Senha',
-              obscureText: true,
-              controller: passwordController,
+                const SizedBox(height: 24),
+
+                ButtonLogin(onPressed: login),
+              ],
             ),
-
-            const SizedBox(height: 24),
-
-            ButtonLogin(onPressed: login),
-          ],
+          ),
         ),
-        ) 
-      ),)  
+      ),
     );
   }
 }

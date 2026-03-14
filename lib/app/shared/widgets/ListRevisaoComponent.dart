@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/widgets/CardRevisaoComponent.dart';
-import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 
 class ListRevisaoComponent extends StatelessWidget {
-  final List<EvidenciaModel> revisoes;
+  final List<EvidenciaCardDto> revisoes;
   final Function(int id) onDelete;
   final ScrollController controller;
   final bool isLoadingMore;
@@ -20,7 +20,7 @@ class ListRevisaoComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       controller: controller,
-      itemCount: revisoes.length + 1,
+      itemCount: revisoes.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index < revisoes.length) {
           final item = revisoes[index];
@@ -35,14 +35,10 @@ class ListRevisaoComponent extends StatelessWidget {
           );
         }
 
-        if (isLoadingMore) {
-          return const Padding(
-            padding: EdgeInsets.all(20),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        return const SizedBox();
+        return const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: CircularProgressIndicator()),
+        );
       },
     );
   }

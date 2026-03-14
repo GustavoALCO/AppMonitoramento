@@ -12,7 +12,7 @@ class EvidenciaModel {
   final String cep;
   final double latitude;
   final double longitude;
-  final String horario;
+  final DateTime horario;
   final TipoConstatacao temaFiscalizacao;
 
   EvidenciaModel({
@@ -44,28 +44,9 @@ class EvidenciaModel {
       imageURL: json['imageURL'],
       endereco: json['endereco'],
       cep: json['cep'],
-      horario: json['horario'],
+      horario: DateTime.parse(json['horario']),
       latitude: json['latitude'],
       longitude: json['longitude']
     );
-  }
-
-  // Converte objeto Dart em JSON para enviar ao backend
-  Map<String, dynamic> toJson() {
-    return {
-      'evidenciaRotaId': evidenciaRotaId,
-      'fiscal': fiscal,
-      'rotaId': rotaId,
-      'temaFiscalizacao': temaFiscalizacao.toString().split('.').last,
-      'alimentador': alimentador,
-      'identificacao': identificacao,
-      'descricao': descricao,
-      'imageURL': imageURL,
-      'endereco': endereco,
-      'cep': cep,
-      'horario': horario,
-      'latidude': latitude,
-      'longitude': longitude
-    };
   }
 }

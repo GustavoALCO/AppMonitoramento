@@ -42,6 +42,16 @@ class $EvidenciastableTable extends Evidenciastable
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<TipoConstatacao, int> tema =
+      GeneratedColumn<int>(
+        'tema',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<TipoConstatacao>($EvidenciastableTable.$convertertema);
   static const VerificationMeta _identificacaoMeta = const VerificationMeta(
     'identificacao',
   );
@@ -134,24 +144,32 @@ class $EvidenciastableTable extends Evidenciastable
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
-  late final GeneratedColumn<bool> status = GeneratedColumn<bool>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("status" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
+  late final GeneratedColumnWithTypeConverter<StatusMode, int> status =
+      GeneratedColumn<int>(
+        'status',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<StatusMode>($EvidenciastableTable.$converterstatus);
+  @override
+  late final GeneratedColumnWithTypeConverter<SharedMode, int> action =
+      GeneratedColumn<int>(
+        'action',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<SharedMode>($EvidenciastableTable.$converteraction);
   @override
   List<GeneratedColumn> get $columns => [
     idEvi,
     idRota,
     idFiscal,
+    tema,
     identificacao,
     alimentador,
     descricao,
@@ -162,6 +180,7 @@ class $EvidenciastableTable extends Evidenciastable
     long,
     horario,
     status,
+    action,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -269,12 +288,6 @@ class $EvidenciastableTable extends Evidenciastable
         horario.isAcceptableOrUnknown(data['horario']!, _horarioMeta),
       );
     }
-    if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
-    }
     return context;
   }
 
@@ -296,6 +309,12 @@ class $EvidenciastableTable extends Evidenciastable
         DriftSqlType.int,
         data['${effectivePrefix}id_fiscal'],
       )!,
+      tema: $EvidenciastableTable.$convertertema.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}tema'],
+        )!,
+      ),
       identificacao: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}identificacao'],
@@ -332,10 +351,18 @@ class $EvidenciastableTable extends Evidenciastable
         DriftSqlType.dateTime,
         data['${effectivePrefix}horario'],
       )!,
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}status'],
-      )!,
+      status: $EvidenciastableTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      action: $EvidenciastableTable.$converteraction.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}action'],
+        )!,
+      ),
     );
   }
 
@@ -343,6 +370,13 @@ class $EvidenciastableTable extends Evidenciastable
   $EvidenciastableTable createAlias(String alias) {
     return $EvidenciastableTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<TipoConstatacao, int, int> $convertertema =
+      const EnumIndexConverter<TipoConstatacao>(TipoConstatacao.values);
+  static JsonTypeConverter2<StatusMode, int, int> $converterstatus =
+      const EnumIndexConverter<StatusMode>(StatusMode.values);
+  static JsonTypeConverter2<SharedMode, int, int> $converteraction =
+      const EnumIndexConverter<SharedMode>(SharedMode.values);
 }
 
 class EvidenciastableData extends DataClass
@@ -350,6 +384,7 @@ class EvidenciastableData extends DataClass
   final int idEvi;
   final int idRota;
   final int idFiscal;
+  final TipoConstatacao tema;
   final String? identificacao;
   final String? alimentador;
   final String descricao;
@@ -359,11 +394,13 @@ class EvidenciastableData extends DataClass
   final double lat;
   final double long;
   final DateTime horario;
-  final bool status;
+  final StatusMode status;
+  final SharedMode action;
   const EvidenciastableData({
     required this.idEvi,
     required this.idRota,
     required this.idFiscal,
+    required this.tema,
     this.identificacao,
     this.alimentador,
     required this.descricao,
@@ -374,6 +411,7 @@ class EvidenciastableData extends DataClass
     required this.long,
     required this.horario,
     required this.status,
+    required this.action,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -381,6 +419,11 @@ class EvidenciastableData extends DataClass
     map['id_evi'] = Variable<int>(idEvi);
     map['id_rota'] = Variable<int>(idRota);
     map['id_fiscal'] = Variable<int>(idFiscal);
+    {
+      map['tema'] = Variable<int>(
+        $EvidenciastableTable.$convertertema.toSql(tema),
+      );
+    }
     if (!nullToAbsent || identificacao != null) {
       map['identificacao'] = Variable<String>(identificacao);
     }
@@ -394,7 +437,16 @@ class EvidenciastableData extends DataClass
     map['lat'] = Variable<double>(lat);
     map['long'] = Variable<double>(long);
     map['horario'] = Variable<DateTime>(horario);
-    map['status'] = Variable<bool>(status);
+    {
+      map['status'] = Variable<int>(
+        $EvidenciastableTable.$converterstatus.toSql(status),
+      );
+    }
+    {
+      map['action'] = Variable<int>(
+        $EvidenciastableTable.$converteraction.toSql(action),
+      );
+    }
     return map;
   }
 
@@ -403,6 +455,7 @@ class EvidenciastableData extends DataClass
       idEvi: Value(idEvi),
       idRota: Value(idRota),
       idFiscal: Value(idFiscal),
+      tema: Value(tema),
       identificacao: identificacao == null && nullToAbsent
           ? const Value.absent()
           : Value(identificacao),
@@ -417,6 +470,7 @@ class EvidenciastableData extends DataClass
       long: Value(long),
       horario: Value(horario),
       status: Value(status),
+      action: Value(action),
     );
   }
 
@@ -429,6 +483,9 @@ class EvidenciastableData extends DataClass
       idEvi: serializer.fromJson<int>(json['idEvi']),
       idRota: serializer.fromJson<int>(json['idRota']),
       idFiscal: serializer.fromJson<int>(json['idFiscal']),
+      tema: $EvidenciastableTable.$convertertema.fromJson(
+        serializer.fromJson<int>(json['tema']),
+      ),
       identificacao: serializer.fromJson<String?>(json['identificacao']),
       alimentador: serializer.fromJson<String?>(json['alimentador']),
       descricao: serializer.fromJson<String>(json['descricao']),
@@ -438,7 +495,12 @@ class EvidenciastableData extends DataClass
       lat: serializer.fromJson<double>(json['lat']),
       long: serializer.fromJson<double>(json['long']),
       horario: serializer.fromJson<DateTime>(json['horario']),
-      status: serializer.fromJson<bool>(json['status']),
+      status: $EvidenciastableTable.$converterstatus.fromJson(
+        serializer.fromJson<int>(json['status']),
+      ),
+      action: $EvidenciastableTable.$converteraction.fromJson(
+        serializer.fromJson<int>(json['action']),
+      ),
     );
   }
   @override
@@ -448,6 +510,9 @@ class EvidenciastableData extends DataClass
       'idEvi': serializer.toJson<int>(idEvi),
       'idRota': serializer.toJson<int>(idRota),
       'idFiscal': serializer.toJson<int>(idFiscal),
+      'tema': serializer.toJson<int>(
+        $EvidenciastableTable.$convertertema.toJson(tema),
+      ),
       'identificacao': serializer.toJson<String?>(identificacao),
       'alimentador': serializer.toJson<String?>(alimentador),
       'descricao': serializer.toJson<String>(descricao),
@@ -457,7 +522,12 @@ class EvidenciastableData extends DataClass
       'lat': serializer.toJson<double>(lat),
       'long': serializer.toJson<double>(long),
       'horario': serializer.toJson<DateTime>(horario),
-      'status': serializer.toJson<bool>(status),
+      'status': serializer.toJson<int>(
+        $EvidenciastableTable.$converterstatus.toJson(status),
+      ),
+      'action': serializer.toJson<int>(
+        $EvidenciastableTable.$converteraction.toJson(action),
+      ),
     };
   }
 
@@ -465,6 +535,7 @@ class EvidenciastableData extends DataClass
     int? idEvi,
     int? idRota,
     int? idFiscal,
+    TipoConstatacao? tema,
     Value<String?> identificacao = const Value.absent(),
     Value<String?> alimentador = const Value.absent(),
     String? descricao,
@@ -474,11 +545,13 @@ class EvidenciastableData extends DataClass
     double? lat,
     double? long,
     DateTime? horario,
-    bool? status,
+    StatusMode? status,
+    SharedMode? action,
   }) => EvidenciastableData(
     idEvi: idEvi ?? this.idEvi,
     idRota: idRota ?? this.idRota,
     idFiscal: idFiscal ?? this.idFiscal,
+    tema: tema ?? this.tema,
     identificacao: identificacao.present
         ? identificacao.value
         : this.identificacao,
@@ -491,12 +564,14 @@ class EvidenciastableData extends DataClass
     long: long ?? this.long,
     horario: horario ?? this.horario,
     status: status ?? this.status,
+    action: action ?? this.action,
   );
   EvidenciastableData copyWithCompanion(EvidenciastableCompanion data) {
     return EvidenciastableData(
       idEvi: data.idEvi.present ? data.idEvi.value : this.idEvi,
       idRota: data.idRota.present ? data.idRota.value : this.idRota,
       idFiscal: data.idFiscal.present ? data.idFiscal.value : this.idFiscal,
+      tema: data.tema.present ? data.tema.value : this.tema,
       identificacao: data.identificacao.present
           ? data.identificacao.value
           : this.identificacao,
@@ -511,6 +586,7 @@ class EvidenciastableData extends DataClass
       long: data.long.present ? data.long.value : this.long,
       horario: data.horario.present ? data.horario.value : this.horario,
       status: data.status.present ? data.status.value : this.status,
+      action: data.action.present ? data.action.value : this.action,
     );
   }
 
@@ -520,6 +596,7 @@ class EvidenciastableData extends DataClass
           ..write('idEvi: $idEvi, ')
           ..write('idRota: $idRota, ')
           ..write('idFiscal: $idFiscal, ')
+          ..write('tema: $tema, ')
           ..write('identificacao: $identificacao, ')
           ..write('alimentador: $alimentador, ')
           ..write('descricao: $descricao, ')
@@ -529,7 +606,8 @@ class EvidenciastableData extends DataClass
           ..write('lat: $lat, ')
           ..write('long: $long, ')
           ..write('horario: $horario, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('action: $action')
           ..write(')'))
         .toString();
   }
@@ -539,6 +617,7 @@ class EvidenciastableData extends DataClass
     idEvi,
     idRota,
     idFiscal,
+    tema,
     identificacao,
     alimentador,
     descricao,
@@ -549,6 +628,7 @@ class EvidenciastableData extends DataClass
     long,
     horario,
     status,
+    action,
   );
   @override
   bool operator ==(Object other) =>
@@ -557,6 +637,7 @@ class EvidenciastableData extends DataClass
           other.idEvi == this.idEvi &&
           other.idRota == this.idRota &&
           other.idFiscal == this.idFiscal &&
+          other.tema == this.tema &&
           other.identificacao == this.identificacao &&
           other.alimentador == this.alimentador &&
           other.descricao == this.descricao &&
@@ -566,13 +647,15 @@ class EvidenciastableData extends DataClass
           other.lat == this.lat &&
           other.long == this.long &&
           other.horario == this.horario &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.action == this.action);
 }
 
 class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
   final Value<int> idEvi;
   final Value<int> idRota;
   final Value<int> idFiscal;
+  final Value<TipoConstatacao> tema;
   final Value<String?> identificacao;
   final Value<String?> alimentador;
   final Value<String> descricao;
@@ -582,11 +665,13 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
   final Value<double> lat;
   final Value<double> long;
   final Value<DateTime> horario;
-  final Value<bool> status;
+  final Value<StatusMode> status;
+  final Value<SharedMode> action;
   const EvidenciastableCompanion({
     this.idEvi = const Value.absent(),
     this.idRota = const Value.absent(),
     this.idFiscal = const Value.absent(),
+    this.tema = const Value.absent(),
     this.identificacao = const Value.absent(),
     this.alimentador = const Value.absent(),
     this.descricao = const Value.absent(),
@@ -597,11 +682,13 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     this.long = const Value.absent(),
     this.horario = const Value.absent(),
     this.status = const Value.absent(),
+    this.action = const Value.absent(),
   });
   EvidenciastableCompanion.insert({
     this.idEvi = const Value.absent(),
     required int idRota,
     required int idFiscal,
+    this.tema = const Value.absent(),
     this.identificacao = const Value.absent(),
     this.alimentador = const Value.absent(),
     required String descricao,
@@ -612,6 +699,7 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     required double long,
     this.horario = const Value.absent(),
     this.status = const Value.absent(),
+    this.action = const Value.absent(),
   }) : idRota = Value(idRota),
        idFiscal = Value(idFiscal),
        descricao = Value(descricao),
@@ -624,6 +712,7 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Expression<int>? idEvi,
     Expression<int>? idRota,
     Expression<int>? idFiscal,
+    Expression<int>? tema,
     Expression<String>? identificacao,
     Expression<String>? alimentador,
     Expression<String>? descricao,
@@ -633,12 +722,14 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Expression<double>? lat,
     Expression<double>? long,
     Expression<DateTime>? horario,
-    Expression<bool>? status,
+    Expression<int>? status,
+    Expression<int>? action,
   }) {
     return RawValuesInsertable({
       if (idEvi != null) 'id_evi': idEvi,
       if (idRota != null) 'id_rota': idRota,
       if (idFiscal != null) 'id_fiscal': idFiscal,
+      if (tema != null) 'tema': tema,
       if (identificacao != null) 'identificacao': identificacao,
       if (alimentador != null) 'alimentador': alimentador,
       if (descricao != null) 'descricao': descricao,
@@ -649,6 +740,7 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       if (long != null) 'long': long,
       if (horario != null) 'horario': horario,
       if (status != null) 'status': status,
+      if (action != null) 'action': action,
     });
   }
 
@@ -656,6 +748,7 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Value<int>? idEvi,
     Value<int>? idRota,
     Value<int>? idFiscal,
+    Value<TipoConstatacao>? tema,
     Value<String?>? identificacao,
     Value<String?>? alimentador,
     Value<String>? descricao,
@@ -665,12 +758,14 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Value<double>? lat,
     Value<double>? long,
     Value<DateTime>? horario,
-    Value<bool>? status,
+    Value<StatusMode>? status,
+    Value<SharedMode>? action,
   }) {
     return EvidenciastableCompanion(
       idEvi: idEvi ?? this.idEvi,
       idRota: idRota ?? this.idRota,
       idFiscal: idFiscal ?? this.idFiscal,
+      tema: tema ?? this.tema,
       identificacao: identificacao ?? this.identificacao,
       alimentador: alimentador ?? this.alimentador,
       descricao: descricao ?? this.descricao,
@@ -681,6 +776,7 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       long: long ?? this.long,
       horario: horario ?? this.horario,
       status: status ?? this.status,
+      action: action ?? this.action,
     );
   }
 
@@ -695,6 +791,11 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     }
     if (idFiscal.present) {
       map['id_fiscal'] = Variable<int>(idFiscal.value);
+    }
+    if (tema.present) {
+      map['tema'] = Variable<int>(
+        $EvidenciastableTable.$convertertema.toSql(tema.value),
+      );
     }
     if (identificacao.present) {
       map['identificacao'] = Variable<String>(identificacao.value);
@@ -724,7 +825,14 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       map['horario'] = Variable<DateTime>(horario.value);
     }
     if (status.present) {
-      map['status'] = Variable<bool>(status.value);
+      map['status'] = Variable<int>(
+        $EvidenciastableTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (action.present) {
+      map['action'] = Variable<int>(
+        $EvidenciastableTable.$converteraction.toSql(action.value),
+      );
     }
     return map;
   }
@@ -735,6 +843,7 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
           ..write('idEvi: $idEvi, ')
           ..write('idRota: $idRota, ')
           ..write('idFiscal: $idFiscal, ')
+          ..write('tema: $tema, ')
           ..write('identificacao: $identificacao, ')
           ..write('alimentador: $alimentador, ')
           ..write('descricao: $descricao, ')
@@ -744,7 +853,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
           ..write('lat: $lat, ')
           ..write('long: $long, ')
           ..write('horario: $horario, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('action: $action')
           ..write(')'))
         .toString();
   }
@@ -1083,6 +1193,7 @@ typedef $$EvidenciastableTableCreateCompanionBuilder =
       Value<int> idEvi,
       required int idRota,
       required int idFiscal,
+      Value<TipoConstatacao> tema,
       Value<String?> identificacao,
       Value<String?> alimentador,
       required String descricao,
@@ -1092,13 +1203,15 @@ typedef $$EvidenciastableTableCreateCompanionBuilder =
       required double lat,
       required double long,
       Value<DateTime> horario,
-      Value<bool> status,
+      Value<StatusMode> status,
+      Value<SharedMode> action,
     });
 typedef $$EvidenciastableTableUpdateCompanionBuilder =
     EvidenciastableCompanion Function({
       Value<int> idEvi,
       Value<int> idRota,
       Value<int> idFiscal,
+      Value<TipoConstatacao> tema,
       Value<String?> identificacao,
       Value<String?> alimentador,
       Value<String> descricao,
@@ -1108,7 +1221,8 @@ typedef $$EvidenciastableTableUpdateCompanionBuilder =
       Value<double> lat,
       Value<double> long,
       Value<DateTime> horario,
-      Value<bool> status,
+      Value<StatusMode> status,
+      Value<SharedMode> action,
     });
 
 class $$EvidenciastableTableFilterComposer
@@ -1133,6 +1247,12 @@ class $$EvidenciastableTableFilterComposer
   ColumnFilters<int> get idFiscal => $composableBuilder(
     column: $table.idFiscal,
     builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<TipoConstatacao, TipoConstatacao, int>
+  get tema => $composableBuilder(
+    column: $table.tema,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<String> get identificacao => $composableBuilder(
@@ -1180,10 +1300,17 @@ class $$EvidenciastableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<StatusMode, StatusMode, int> get status =>
+      $composableBuilder(
+        column: $table.status,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<SharedMode, SharedMode, int> get action =>
+      $composableBuilder(
+        column: $table.action,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 }
 
 class $$EvidenciastableTableOrderingComposer
@@ -1207,6 +1334,11 @@ class $$EvidenciastableTableOrderingComposer
 
   ColumnOrderings<int> get idFiscal => $composableBuilder(
     column: $table.idFiscal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tema => $composableBuilder(
+    column: $table.tema,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1255,8 +1387,13 @@ class $$EvidenciastableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get status => $composableBuilder(
+  ColumnOrderings<int> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get action => $composableBuilder(
+    column: $table.action,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -1278,6 +1415,9 @@ class $$EvidenciastableTableAnnotationComposer
 
   GeneratedColumn<int> get idFiscal =>
       $composableBuilder(column: $table.idFiscal, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<TipoConstatacao, int> get tema =>
+      $composableBuilder(column: $table.tema, builder: (column) => column);
 
   GeneratedColumn<String> get identificacao => $composableBuilder(
     column: $table.identificacao,
@@ -1310,8 +1450,11 @@ class $$EvidenciastableTableAnnotationComposer
   GeneratedColumn<DateTime> get horario =>
       $composableBuilder(column: $table.horario, builder: (column) => column);
 
-  GeneratedColumn<bool> get status =>
+  GeneratedColumnWithTypeConverter<StatusMode, int> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SharedMode, int> get action =>
+      $composableBuilder(column: $table.action, builder: (column) => column);
 }
 
 class $$EvidenciastableTableTableManager
@@ -1354,6 +1497,7 @@ class $$EvidenciastableTableTableManager
                 Value<int> idEvi = const Value.absent(),
                 Value<int> idRota = const Value.absent(),
                 Value<int> idFiscal = const Value.absent(),
+                Value<TipoConstatacao> tema = const Value.absent(),
                 Value<String?> identificacao = const Value.absent(),
                 Value<String?> alimentador = const Value.absent(),
                 Value<String> descricao = const Value.absent(),
@@ -1363,11 +1507,13 @@ class $$EvidenciastableTableTableManager
                 Value<double> lat = const Value.absent(),
                 Value<double> long = const Value.absent(),
                 Value<DateTime> horario = const Value.absent(),
-                Value<bool> status = const Value.absent(),
+                Value<StatusMode> status = const Value.absent(),
+                Value<SharedMode> action = const Value.absent(),
               }) => EvidenciastableCompanion(
                 idEvi: idEvi,
                 idRota: idRota,
                 idFiscal: idFiscal,
+                tema: tema,
                 identificacao: identificacao,
                 alimentador: alimentador,
                 descricao: descricao,
@@ -1378,12 +1524,14 @@ class $$EvidenciastableTableTableManager
                 long: long,
                 horario: horario,
                 status: status,
+                action: action,
               ),
           createCompanionCallback:
               ({
                 Value<int> idEvi = const Value.absent(),
                 required int idRota,
                 required int idFiscal,
+                Value<TipoConstatacao> tema = const Value.absent(),
                 Value<String?> identificacao = const Value.absent(),
                 Value<String?> alimentador = const Value.absent(),
                 required String descricao,
@@ -1393,11 +1541,13 @@ class $$EvidenciastableTableTableManager
                 required double lat,
                 required double long,
                 Value<DateTime> horario = const Value.absent(),
-                Value<bool> status = const Value.absent(),
+                Value<StatusMode> status = const Value.absent(),
+                Value<SharedMode> action = const Value.absent(),
               }) => EvidenciastableCompanion.insert(
                 idEvi: idEvi,
                 idRota: idRota,
                 idFiscal: idFiscal,
+                tema: tema,
                 identificacao: identificacao,
                 alimentador: alimentador,
                 descricao: descricao,
@@ -1408,6 +1558,7 @@ class $$EvidenciastableTableTableManager
                 long: long,
                 horario: horario,
                 status: status,
+                action: action,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

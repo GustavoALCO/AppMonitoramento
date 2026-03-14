@@ -1,10 +1,15 @@
+// ignore_for_file: unnecessary_null_comparison
 import 'package:flutter/material.dart';
+import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
+import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ListRevisaoComponent.dart';
 import 'package:monitoramento/core/features/data/evidencias/evidencias_service.dart';
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/network/api_client.dart';
+import 'package:monitoramento/core/services/bd_evidencias_service.dart';
+import 'package:monitoramento/core/services/token_service.dart';
 
 class Revisaopage extends StatefulWidget {
   final int id;
@@ -16,15 +21,19 @@ class Revisaopage extends StatefulWidget {
 }
 
 class _RevisaopageState extends State<Revisaopage> {
-  late EvidenciasService _service;
+  late BdEvidenciasService _service;
+  late ApiClient _apiClient;
+  late EvidenciasService _evidenciasService;
+  late TokenService _tokenService;
 
-  List<EvidenciaModel> revisoes = [];
+  List<EvidenciaCardDto> revisoes = [];
 
   final ScrollController _scrollController = ScrollController();
 
   int paginaAtual = 1;
-  final int pageSize = 5;
+  final int pageSize = 2;
 
+  bool isRequesting = false;
   bool isLoading = true;
   bool isLoadingMore = false;
   bool hasMore = true;
@@ -35,7 +44,10 @@ class _RevisaopageState extends State<Revisaopage> {
   void initState() {
     super.initState();
 
-    _service = EvidenciasService(ApiClient());
+    _apiClient = ApiClient();
+    _evidenciasService = EvidenciasService(_apiClient);
+    _service = BdEvidenciasService();
+    _tokenService = TokenService();
 
     carregarDados();
 
@@ -43,7 +55,8 @@ class _RevisaopageState extends State<Revisaopage> {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 200 &&
           !isLoadingMore &&
-          hasMore) {
+          hasMore &&
+          !isRequesting) {
         carregarMais();
       }
     });
@@ -55,77 +68,134 @@ class _RevisaopageState extends State<Revisaopage> {
     super.dispose();
   }
 
+  EvidenciaCardDto evidenciaApiToDto(EvidenciaModel evi) {
+    return EvidenciaCardDto(
+      id: evi.evidenciaRotaId,
+      rotaId: evi.rotaId,
+      fiscal: evi.fiscal,
+      descricao: evi.descricao,
+      endereco: evi.endereco,
+      identificacao: evi.identificacao,
+      alimentador: evi.alimentador,
+      image: evi.imageURL,
+      horario: evi.horario.toString(),
+      latitude: evi.latitude,
+      longitude: evi.longitude,
+      tema: evi.temaFiscalizacao,
+      status: StatusMode.enviado,
+    );
+  }
+
   Future<void> carregarDados() async {
+    setState(() => isLoading = true);
+
     try {
       paginaAtual = 1;
-      revisoes.clear();
 
-      final response = await _service.getEvidencias(
+      List<EvidenciaCardDto> listaTemp = [];
+
+      var evicloud = await _evidenciasService.getEvidencias(
         widget.id,
         paginaAtual,
         pageSize,
       );
 
+      /// API
+      for (var evi in evicloud) {
+        listaTemp.add(evidenciaApiToDto(evi));
+      }
+
       setState(() {
-        revisoes = response;
+        revisoes = listaTemp;
         isLoading = false;
-        hasMore = response.length == pageSize;
+        hasMore = evicloud.length >= pageSize;
       });
     } catch (e) {
-      setState(() {
-        error = e.toString();
-        isLoading = false;
-      });
+      await buscaLocal();
     }
   }
 
   Future<void> carregarMais() async {
-    setState(() {
-      isLoadingMore = true;
-    });
+    if (isLoadingMore || !hasMore) return;
 
-    paginaAtual++;
+    setState(() => isLoadingMore = true);
+
+    final proximaPagina = paginaAtual + 1;
 
     try {
-      final response = await _service.getEvidencias(
+      var evicloud = await _evidenciasService.getEvidencias(
         widget.id,
-        paginaAtual,
+        proximaPagina,
         pageSize,
       );
 
+      List<EvidenciaCardDto> novas = [];
+
+      for (var evi in evicloud) {
+        novas.add(evidenciaApiToDto(evi));
+      }
+
       setState(() {
-        revisoes.addAll(response);
-        hasMore = response.length == pageSize;
+        paginaAtual = proximaPagina;
+        revisoes.addAll(novas);
+        hasMore = evicloud.length == pageSize;
         isLoadingMore = false;
       });
     } catch (e) {
-      setState(() {
-        isLoadingMore = false;
-      });
+      if (hasMore == true) {
+        await buscaLocal();
+      }
+
+      /// fallback banco
     }
   }
 
+  Future<void> buscaLocal() async {
+
+  List<EvidenciaCardDto> listaTemp = [];
+
+  var evilocal = await _service.buscarEvidenciasID(widget.id);
+
+  final fiscal = await _tokenService.getNameFiscal() ?? "";
+
+  for (var evi in evilocal) {
+    listaTemp.add(
+      EvidenciaCardDto(
+        id: evi.idEvi,
+        rotaId: evi.idRota,
+        fiscal: fiscal,
+        descricao: evi.descricao,
+        endereco: evi.endereco,
+        identificacao: evi.identificacao,
+        alimentador: evi.alimentador,
+        image: evi.image,
+        horario: "${evi.horario}Z",
+        latitude: evi.lat,
+        longitude: evi.long,
+        tema: evi.tema,
+        status: StatusMode.local,
+      ),
+    );
+  }
+
+  listaTemp.sort((a, b) => a.horario.compareTo(b.horario));
+
+  final horariosJaCarregados = revisoes.map((e) => e.horario).toSet();
+
+  final novas = listaTemp
+      .where((e) => !horariosJaCarregados.contains(e.horario))
+      .toList();
+
+  setState(() {
+    revisoes.addAll(novas);
+    isLoading = false;
+    hasMore = false;
+  });
+}
+
   Future<void> _excluirEvidencia(int id) async {
-    try {
-      final statusCode = await _service.deleteEvidencia(id);
-
-      if (statusCode == 200 || statusCode == 204) {
-        setState(() {
-          revisoes.removeWhere((e) => e.evidenciaRotaId == id);
-        });
-
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Evidência excluída com sucesso!")),
-        );
-      }
-    } catch (e) {
-      
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text("Erro: $e")));
-    }
+    await _service.excluirEvidencia(id);
+    carregarDados();
   }
 
   Future<void> _abrirCriarEvidencia() async {
@@ -135,9 +205,7 @@ class _RevisaopageState extends State<Revisaopage> {
       arguments: widget.id,
     );
 
-    if (result == true) {
-      carregarDados();
-    }
+    if (result == true) carregarDados();
   }
 
   @override
@@ -145,7 +213,7 @@ class _RevisaopageState extends State<Revisaopage> {
     return Scaffold(
       appBar: AppbarComponent("Revisão", false),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Builder(
           builder: (_) {
             if (isLoading) {
@@ -165,7 +233,6 @@ class _RevisaopageState extends State<Revisaopage> {
           },
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: _abrirCriarEvidencia,
         backgroundColor: AppColors.cards,

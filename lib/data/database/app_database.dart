@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
+import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/enums/enumsharedMode.dart';
 import 'package:monitoramento/data/database/tables/evidenciasTable.dart';
 import 'package:monitoramento/data/database/tables/rotasTable.dart';
 
