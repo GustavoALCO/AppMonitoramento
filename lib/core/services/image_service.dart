@@ -18,8 +18,8 @@
     );
 
     return pickedFile;
-  } catch (e, f) {
-    print(f);
+  } catch (e) {
+    
     return null;
   }
 }

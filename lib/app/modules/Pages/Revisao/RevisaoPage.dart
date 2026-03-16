@@ -9,6 +9,7 @@ import 'package:monitoramento/core/features/data/evidencias/evidencias_service.d
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/network/api_client.dart';
 import 'package:monitoramento/core/services/bd_evidencias_service.dart';
+import 'package:monitoramento/core/services/sync_service.dart';
 import 'package:monitoramento/core/services/token_service.dart';
 
 class Revisaopage extends StatefulWidget {
@@ -48,6 +49,8 @@ class _RevisaopageState extends State<Revisaopage> {
     _evidenciasService = EvidenciasService(_apiClient);
     _service = BdEvidenciasService();
     _tokenService = TokenService();
+
+    SyncService.instance.start();
 
     carregarDados();
 

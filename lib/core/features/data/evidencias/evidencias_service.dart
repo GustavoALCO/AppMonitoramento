@@ -53,16 +53,18 @@ class EvidenciasService {
 
   // Método para criar uma nova evidência
   Future<bool> post(CreateEvidenciasModel data) async {
-  await _apiClient.post(
-    ApiRoutes.evidencia,
-    body: data.toJson(),
-    headers: {
-      "Authorization": "Bearer ${await jwt.returnToken()}",
-      "Content-Type": "application/json",
-    },
-  );
+  final response = await _apiClient.post(
+  ApiRoutes.evidencia,
+  body: data.toJson(),
+  headers: {
+    "Authorization": "Bearer ${await jwt.returnToken()}",
+    "Content-Type": "application/json",
+  },
+);
 
-  return true;
+
+// Retorno booleano
+return response['statusCode'] == 200 || response['statusCode'] == 201;
 }
 
   Future<bool> patch(UpdateEvidenciasModel data) async {

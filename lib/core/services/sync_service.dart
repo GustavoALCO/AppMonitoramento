@@ -70,25 +70,24 @@ class SyncService {
     try {
       final evidencias = await _bd.buscarEvidencias();
 
+      //Loop para verificar se há mais de 1 dia a evidencia no celular
       for (var evi in evidencias) {
         if (evi.status != StatusMode.local) {
           final agora = DateTime.now();
 
-          
-
           if (agora.difference(evi.horario).inHours >= 24) {
             await _bd.excluirEvidencia(evi.idEvi);
+
             continue;
           }
         }
 
         try {
           if (evi.action.index == SharedMode.create.index &&
-              evi.status.index == StatusMode.local.index) {
+              evi.status.index != StatusMode.enviado.index) {
             await _enviarCreate(evi);
-          }
-
-          if (evi.action.index == SharedMode.update.index) {
+          } else if (evi.action.index == SharedMode.update.index &&
+              evi.status.index != StatusMode.enviado.index) {
             await _enviarUpdate(evi);
           }
           // ignore: empty_catches
@@ -117,7 +116,6 @@ class SyncService {
       dataHora: evi.horario,
       identificacao: evi.identificacao ?? "",
       endereco: evi.endereco,
-      cep: evi.cep,
       latitude: evi.lat,
       longitude: evi.long,
       alimentador: evi.alimentador ?? "",
@@ -125,11 +123,15 @@ class SyncService {
       tema: evi.tema.index,
     );
 
-    final sucesso = await _service.post(model);
+    try {
+      final sucesso = await _service.post(model);
 
-    if (sucesso) {
-      await _bd.alterarStatus(evi.idEvi, StatusMode.enviado);
-    } else {
+      if (sucesso) {
+        await _bd.alterarStatus(evi.idEvi, StatusMode.enviado);
+      } else {
+        await _bd.alterarStatus(evi.idEvi, StatusMode.erro);
+      }
+    } catch (ex) {
       await _bd.alterarStatus(evi.idEvi, StatusMode.erro);
     }
   }

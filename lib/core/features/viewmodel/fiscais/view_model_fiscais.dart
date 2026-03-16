@@ -101,7 +101,7 @@ class ViewModelFiscais extends ChangeNotifier {
     // Tenta criar o fiscal usando o serviço, e captura qualquer erro que possa ocorrer
     try {
       // Chama o método do serviço para criar um novo fiscal, passando os dados do novo fiscal
-      await _serviceFiscais.createFiscal(data);
+      //await _serviceFiscais.createFiscal(data);
       // Após criar, recarrega a lista de fiscais para refletir a mudança
       await loadFiscais();
     }

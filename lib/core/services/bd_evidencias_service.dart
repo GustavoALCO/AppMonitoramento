@@ -22,7 +22,6 @@ class BdEvidenciasService {
   Future<void> alterarEvidencia(
     int id,
     String? dsc,
-    String? cep,
     String? endereco,
     String? identificacao,
     String? alimentador,
@@ -34,7 +33,6 @@ class BdEvidenciasService {
         // só altera os valores se for passado diferente de null
         descricao: dsc != null ? Value(dsc) : const Value.absent(),
 
-        cep: cep != null ? Value(cep) : const Value.absent(),
         endereco: endereco != null ? Value(endereco) : const Value.absent(),
 
         identificacao: identificacao != null
@@ -54,7 +52,6 @@ class BdEvidenciasService {
  Future<void> criarEvidencia(
   int idRota,
   int idFiscal,
-  String cep,
   String image,
   double lat,
   double long,
@@ -65,39 +62,32 @@ class BdEvidenciasService {
   TipoConstatacao tema
 ) async {
 
-  try {
+ try {
+  await database.into(database.evidenciastable).insert(
+    EvidenciastableCompanion(
+      idRota: Value(idRota), // ou trate como obrigatório
+      idFiscal: Value(idFiscal),
+      horario: Value(DateTime.now()),
+      image: Value(image), // certifique-se que a coluna é nullable se image for null
+      lat: Value(lat ),
+      long: Value(long),
+      endereco: Value(endereco),
+      descricao: Value(descricao),
+      status: Value(StatusMode.local), // converte enum para string
+      action: Value(SharedMode.create), // converte enum para string
+      alimentador: Value(alimentador),
+      identificacao: Value(identificacao),
+      tema: Value(tema),
+    ),
+  );
 
-    final id = await database
-        .into(database.evidenciastable)
-        .insert(
-          EvidenciastableCompanion(
-            idRota: Value(idRota),
-            idFiscal: Value(idFiscal),
-            cep: Value(cep),
-            horario: Value(DateTime.now()),
-            image: Value(image),
-            lat: Value(lat),
-            long: Value(long),
-            endereco: Value(endereco),
-            descricao: Value(descricao),
-            status: Value(StatusMode.local),
-            action: Value(SharedMode.create),
-            alimentador: Value(alimentador),
-            identificacao: Value(identificacao),
-            tema: Value(tema),
-          ),
-        );
+  await database.select(database.evidenciastable).get();
 
-    print("Evidencia inserida ID: $id");
 
-    final lista = await database.select(database.evidenciastable).get();
+// ignore: empty_catches
+} catch (ex) {
 
-    print("TOTAL NO BANCO: ${lista.length}");
-
-  } catch(ex, d) {
-    print("Erro ao adicionar evidencia ao Banco de dados. $ex");
-    print(d);
-  }
+}
 }
 
   Future<List<EvidenciastableData>> buscarEvidenciasID(int idRota) async {

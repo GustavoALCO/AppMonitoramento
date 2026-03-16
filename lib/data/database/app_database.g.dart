@@ -105,15 +105,6 @@ class $EvidenciastableTable extends Evidenciastable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _cepMeta = const VerificationMeta('cep');
-  @override
-  late final GeneratedColumn<String> cep = GeneratedColumn<String>(
-    'cep',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
   static const VerificationMeta _latMeta = const VerificationMeta('lat');
   @override
   late final GeneratedColumn<double> lat = GeneratedColumn<double>(
@@ -175,7 +166,6 @@ class $EvidenciastableTable extends Evidenciastable
     descricao,
     image,
     endereco,
-    cep,
     lat,
     long,
     horario,
@@ -258,14 +248,6 @@ class $EvidenciastableTable extends Evidenciastable
     } else if (isInserting) {
       context.missing(_enderecoMeta);
     }
-    if (data.containsKey('cep')) {
-      context.handle(
-        _cepMeta,
-        cep.isAcceptableOrUnknown(data['cep']!, _cepMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_cepMeta);
-    }
     if (data.containsKey('lat')) {
       context.handle(
         _latMeta,
@@ -335,10 +317,6 @@ class $EvidenciastableTable extends Evidenciastable
         DriftSqlType.string,
         data['${effectivePrefix}endereco'],
       )!,
-      cep: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}cep'],
-      )!,
       lat: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}lat'],
@@ -390,7 +368,6 @@ class EvidenciastableData extends DataClass
   final String descricao;
   final String image;
   final String endereco;
-  final String cep;
   final double lat;
   final double long;
   final DateTime horario;
@@ -406,7 +383,6 @@ class EvidenciastableData extends DataClass
     required this.descricao,
     required this.image,
     required this.endereco,
-    required this.cep,
     required this.lat,
     required this.long,
     required this.horario,
@@ -433,7 +409,6 @@ class EvidenciastableData extends DataClass
     map['descricao'] = Variable<String>(descricao);
     map['image'] = Variable<String>(image);
     map['endereco'] = Variable<String>(endereco);
-    map['cep'] = Variable<String>(cep);
     map['lat'] = Variable<double>(lat);
     map['long'] = Variable<double>(long);
     map['horario'] = Variable<DateTime>(horario);
@@ -465,7 +440,6 @@ class EvidenciastableData extends DataClass
       descricao: Value(descricao),
       image: Value(image),
       endereco: Value(endereco),
-      cep: Value(cep),
       lat: Value(lat),
       long: Value(long),
       horario: Value(horario),
@@ -491,7 +465,6 @@ class EvidenciastableData extends DataClass
       descricao: serializer.fromJson<String>(json['descricao']),
       image: serializer.fromJson<String>(json['image']),
       endereco: serializer.fromJson<String>(json['endereco']),
-      cep: serializer.fromJson<String>(json['cep']),
       lat: serializer.fromJson<double>(json['lat']),
       long: serializer.fromJson<double>(json['long']),
       horario: serializer.fromJson<DateTime>(json['horario']),
@@ -518,7 +491,6 @@ class EvidenciastableData extends DataClass
       'descricao': serializer.toJson<String>(descricao),
       'image': serializer.toJson<String>(image),
       'endereco': serializer.toJson<String>(endereco),
-      'cep': serializer.toJson<String>(cep),
       'lat': serializer.toJson<double>(lat),
       'long': serializer.toJson<double>(long),
       'horario': serializer.toJson<DateTime>(horario),
@@ -541,7 +513,6 @@ class EvidenciastableData extends DataClass
     String? descricao,
     String? image,
     String? endereco,
-    String? cep,
     double? lat,
     double? long,
     DateTime? horario,
@@ -559,7 +530,6 @@ class EvidenciastableData extends DataClass
     descricao: descricao ?? this.descricao,
     image: image ?? this.image,
     endereco: endereco ?? this.endereco,
-    cep: cep ?? this.cep,
     lat: lat ?? this.lat,
     long: long ?? this.long,
     horario: horario ?? this.horario,
@@ -581,7 +551,6 @@ class EvidenciastableData extends DataClass
       descricao: data.descricao.present ? data.descricao.value : this.descricao,
       image: data.image.present ? data.image.value : this.image,
       endereco: data.endereco.present ? data.endereco.value : this.endereco,
-      cep: data.cep.present ? data.cep.value : this.cep,
       lat: data.lat.present ? data.lat.value : this.lat,
       long: data.long.present ? data.long.value : this.long,
       horario: data.horario.present ? data.horario.value : this.horario,
@@ -602,7 +571,6 @@ class EvidenciastableData extends DataClass
           ..write('descricao: $descricao, ')
           ..write('image: $image, ')
           ..write('endereco: $endereco, ')
-          ..write('cep: $cep, ')
           ..write('lat: $lat, ')
           ..write('long: $long, ')
           ..write('horario: $horario, ')
@@ -623,7 +591,6 @@ class EvidenciastableData extends DataClass
     descricao,
     image,
     endereco,
-    cep,
     lat,
     long,
     horario,
@@ -643,7 +610,6 @@ class EvidenciastableData extends DataClass
           other.descricao == this.descricao &&
           other.image == this.image &&
           other.endereco == this.endereco &&
-          other.cep == this.cep &&
           other.lat == this.lat &&
           other.long == this.long &&
           other.horario == this.horario &&
@@ -661,7 +627,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
   final Value<String> descricao;
   final Value<String> image;
   final Value<String> endereco;
-  final Value<String> cep;
   final Value<double> lat;
   final Value<double> long;
   final Value<DateTime> horario;
@@ -677,7 +642,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     this.descricao = const Value.absent(),
     this.image = const Value.absent(),
     this.endereco = const Value.absent(),
-    this.cep = const Value.absent(),
     this.lat = const Value.absent(),
     this.long = const Value.absent(),
     this.horario = const Value.absent(),
@@ -694,7 +658,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     required String descricao,
     required String image,
     required String endereco,
-    required String cep,
     required double lat,
     required double long,
     this.horario = const Value.absent(),
@@ -705,7 +668,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
        descricao = Value(descricao),
        image = Value(image),
        endereco = Value(endereco),
-       cep = Value(cep),
        lat = Value(lat),
        long = Value(long);
   static Insertable<EvidenciastableData> custom({
@@ -718,7 +680,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Expression<String>? descricao,
     Expression<String>? image,
     Expression<String>? endereco,
-    Expression<String>? cep,
     Expression<double>? lat,
     Expression<double>? long,
     Expression<DateTime>? horario,
@@ -735,7 +696,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       if (descricao != null) 'descricao': descricao,
       if (image != null) 'image': image,
       if (endereco != null) 'endereco': endereco,
-      if (cep != null) 'cep': cep,
       if (lat != null) 'lat': lat,
       if (long != null) 'long': long,
       if (horario != null) 'horario': horario,
@@ -754,7 +714,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Value<String>? descricao,
     Value<String>? image,
     Value<String>? endereco,
-    Value<String>? cep,
     Value<double>? lat,
     Value<double>? long,
     Value<DateTime>? horario,
@@ -771,7 +730,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       descricao: descricao ?? this.descricao,
       image: image ?? this.image,
       endereco: endereco ?? this.endereco,
-      cep: cep ?? this.cep,
       lat: lat ?? this.lat,
       long: long ?? this.long,
       horario: horario ?? this.horario,
@@ -812,9 +770,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     if (endereco.present) {
       map['endereco'] = Variable<String>(endereco.value);
     }
-    if (cep.present) {
-      map['cep'] = Variable<String>(cep.value);
-    }
     if (lat.present) {
       map['lat'] = Variable<double>(lat.value);
     }
@@ -849,7 +804,6 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
           ..write('descricao: $descricao, ')
           ..write('image: $image, ')
           ..write('endereco: $endereco, ')
-          ..write('cep: $cep, ')
           ..write('lat: $lat, ')
           ..write('long: $long, ')
           ..write('horario: $horario, ')
@@ -1199,7 +1153,6 @@ typedef $$EvidenciastableTableCreateCompanionBuilder =
       required String descricao,
       required String image,
       required String endereco,
-      required String cep,
       required double lat,
       required double long,
       Value<DateTime> horario,
@@ -1217,7 +1170,6 @@ typedef $$EvidenciastableTableUpdateCompanionBuilder =
       Value<String> descricao,
       Value<String> image,
       Value<String> endereco,
-      Value<String> cep,
       Value<double> lat,
       Value<double> long,
       Value<DateTime> horario,
@@ -1277,11 +1229,6 @@ class $$EvidenciastableTableFilterComposer
 
   ColumnFilters<String> get endereco => $composableBuilder(
     column: $table.endereco,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get cep => $composableBuilder(
-    column: $table.cep,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1367,11 +1314,6 @@ class $$EvidenciastableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get cep => $composableBuilder(
-    column: $table.cep,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<double> get lat => $composableBuilder(
     column: $table.lat,
     builder: (column) => ColumnOrderings(column),
@@ -1438,9 +1380,6 @@ class $$EvidenciastableTableAnnotationComposer
   GeneratedColumn<String> get endereco =>
       $composableBuilder(column: $table.endereco, builder: (column) => column);
 
-  GeneratedColumn<String> get cep =>
-      $composableBuilder(column: $table.cep, builder: (column) => column);
-
   GeneratedColumn<double> get lat =>
       $composableBuilder(column: $table.lat, builder: (column) => column);
 
@@ -1503,7 +1442,6 @@ class $$EvidenciastableTableTableManager
                 Value<String> descricao = const Value.absent(),
                 Value<String> image = const Value.absent(),
                 Value<String> endereco = const Value.absent(),
-                Value<String> cep = const Value.absent(),
                 Value<double> lat = const Value.absent(),
                 Value<double> long = const Value.absent(),
                 Value<DateTime> horario = const Value.absent(),
@@ -1519,7 +1457,6 @@ class $$EvidenciastableTableTableManager
                 descricao: descricao,
                 image: image,
                 endereco: endereco,
-                cep: cep,
                 lat: lat,
                 long: long,
                 horario: horario,
@@ -1537,7 +1474,6 @@ class $$EvidenciastableTableTableManager
                 required String descricao,
                 required String image,
                 required String endereco,
-                required String cep,
                 required double lat,
                 required double long,
                 Value<DateTime> horario = const Value.absent(),
@@ -1553,7 +1489,6 @@ class $$EvidenciastableTableTableManager
                 descricao: descricao,
                 image: image,
                 endereco: endereco,
-                cep: cep,
                 lat: lat,
                 long: long,
                 horario: horario,

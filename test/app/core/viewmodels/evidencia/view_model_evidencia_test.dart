@@ -61,7 +61,6 @@ void main() {
   expect(model.base64,
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=");
   expect(model.endereco, "Endereço Teste");
-  expect(model.cep, "12345-678");
   expect(model.latitude, 12.3456);
   expect(model.longitude, 78.9012);
   expect(model.dataHora,

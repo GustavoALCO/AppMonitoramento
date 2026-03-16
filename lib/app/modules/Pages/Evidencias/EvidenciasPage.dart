@@ -40,7 +40,6 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   late BdEvidenciasService _bdEvidenciasService;
 
   final enderecoController = TextEditingController();
-  final cepController = TextEditingController();
   final alimentadorController = TextEditingController();
   final identificadorController = TextEditingController();
   final descricaoController = TextEditingController();
@@ -89,7 +88,6 @@ Future<void> _init() async {
   @override
   void dispose() {
     enderecoController.dispose();
-    cepController.dispose();
     alimentadorController.dispose();
     identificadorController.dispose();
     descricaoController.dispose();
@@ -122,7 +120,6 @@ Future<void> _init() async {
        await _bdEvidenciasService.criarEvidencia(
         widget.rotaId,
         await _tokenService.getIdPayload() ?? 0,
-        cepController.text,
         pathImage ?? "",
         geo!.latitude,
         geo!.longitude,
@@ -137,10 +134,9 @@ Future<void> _init() async {
       await _bdEvidenciasService.alterarEvidencia(
         widget.model!.id,
         descricaoController.text,
-        cepController.text,
         enderecoController.text,
         identificadorController.text,
-        alimentadorController.text,
+        alimentadorController.text
 
       );
     }
@@ -199,7 +195,6 @@ Future<void> _init() async {
       }
 
       enderecoController.text = adress["endereco"] ?? "";
-      cepController.text = adress["cep"] ?? "";
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -360,11 +355,7 @@ Future<void> _init() async {
               label: "Endereço Atual",
               controller: enderecoController,
             ),
-
-            const SizedBox(height: 16),
-
-            InputComponent(label: "CEP", controller: cepController),
-
+  
             const SizedBox(height: 16),
 
             InputComponent(

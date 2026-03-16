@@ -26,8 +26,6 @@ class Evidenciastable extends Table {
 
   TextColumn get endereco => text()();
 
-  TextColumn get cep => text()();
-
   RealColumn get lat => real()();
 
   RealColumn get long => real()();

@@ -6,7 +6,7 @@ class ApiConfig {
     final dio = Dio();
 
     // Configura a URL base para as requisições
-    dio.options.baseUrl = 'https://5f1e-177-81-229-94.ngrok-free.app';
+    dio.options.baseUrl = 'https://e585-177-81-229-94.ngrok-free.app';
 
     // Retorna a instância do Dio configurada
     return dio;

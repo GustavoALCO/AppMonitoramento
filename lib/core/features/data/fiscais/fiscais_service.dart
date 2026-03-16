@@ -1,4 +1,3 @@
-import 'package:monitoramento/core/features/models/fiscais/create_fiscais_model.dart';
 import 'package:monitoramento/core/features/models/fiscais/fiscais_model.dart';
 import 'package:monitoramento/core/features/models/fiscais/login_fiscal_model.dart';
 import 'package:monitoramento/core/features/models/fiscais/update_fiscais_model.dart';
@@ -22,20 +21,20 @@ class FiscaisService {
     return (data as List<FiscaisModel>).map((json) => json).toList();
   }
 
-  // Método para criar um novo fiscal
-  Future<String> createFiscal(CreateFiscaisModel data) async {
-    // Faz a requisição POST para o endpoint de fiscais, passando os dados do novo fiscal no corpo da requisição
-    final response = await _apiClient.post(
-      ApiRoutes.fiscais,
-      body: data.toJson(),
-      headers: {
-        "Authorization": "Bearer ${await jwt.returnToken()}",
-        "Content-Type": "application/json",
-      },
-    );
-    // Retorna a resposta da API (pode ser uma mensagem de sucesso ou o ID do novo fiscal criado)
-    return response.statusCode.toString();
-  }
+  // // Método para criar um novo fiscal
+  // Future<String> createFiscal(CreateFiscaisModel data) async {
+  //   // Faz a requisição POST para o endpoint de fiscais, passando os dados do novo fiscal no corpo da requisição
+  //   final response = await _apiClient.post(
+  //     ApiRoutes.fiscais,
+  //     body: data.toJson(),
+  //     headers: {
+  //       "Authorization": "Bearer ${await jwt.returnToken()}",
+  //       "Content-Type": "application/json",
+  //     },
+  //   );
+  //   // Retorna a resposta da API (pode ser uma mensagem de sucesso ou o ID do novo fiscal criado)
+  //   return response.statusCode.toString();
+  // }
 
   // Método para deletar um fiscal
   Future<String> deleteFiscal(int id) async {
@@ -68,13 +67,8 @@ class FiscaisService {
     final response = await _apiClient.login(
       ApiRoutes.login,
       body: data.toJson(),
-      headers: {
-      "Authorization": "Bearer ${await jwt.returnToken()}",
-      "Content-Type": "application/json",
-    },
     );
-    // Retorna a resposta da API (pode ser um token de autenticação ou uma mensagem de erro)
-
+    // Retorna a resposta da API 
     return response;
   }
 }

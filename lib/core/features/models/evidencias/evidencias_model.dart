@@ -9,7 +9,6 @@ class EvidenciaModel {
   final String? descricao;
   final String imageURL;
   final String endereco;
-  final String cep;
   final double latitude;
   final double longitude;
   final DateTime horario;
@@ -25,7 +24,6 @@ class EvidenciaModel {
     required this.descricao,
     required this.imageURL,
     required this.endereco,
-    required this.cep,
     required this.horario,
     required this.latitude,
     required this.longitude
@@ -43,7 +41,6 @@ class EvidenciaModel {
       descricao: json['descricao'],
       imageURL: json['imageURL'],
       endereco: json['endereco'],
-      cep: json['cep'],
       horario: DateTime.parse(json['horario']),
       latitude: json['latitude'],
       longitude: json['longitude']

@@ -7,7 +7,6 @@ class CreateEvidenciasModel {
   final String descricao;
   final String base64;
   final String endereco;
-  final String cep;
   final double latitude;
   final double longitude;
   final DateTime dataHora;
@@ -21,7 +20,6 @@ class CreateEvidenciasModel {
     required this.descricao,
     required this.base64,
     required this.endereco,
-    required this.cep,
     required this.latitude,
     required this.longitude,
     required this.dataHora,
@@ -37,7 +35,6 @@ class CreateEvidenciasModel {
       'descricao': descricao,
       'base64': base64,
       'endereco': endereco,
-      'cep': cep,
       'latitude': latitude,
       'longitude': longitude,
       'horario': dataHora.toUtc().toIso8601String(),
@@ -54,7 +51,6 @@ class CreateEvidenciasModel {
       descricao: json['descricao'],
       base64: json['base64'],
       endereco: json['endereco'],
-      cep: json['cep'],
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       dataHora: DateTime.parse(json['horario']),

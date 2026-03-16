@@ -8,12 +8,12 @@ import 'package:monitoramento/core/features/models/rotas/get_filters_rotas_model
 import 'package:monitoramento/core/features/models/rotas/rotas_model.dart';
 import 'package:monitoramento/core/network/api_client.dart';
 import 'package:monitoramento/core/services/bd_rota_service.dart';
+import 'package:monitoramento/core/services/token_service.dart';
 
 class RotaPage extends StatefulWidget {
-  const RotaPage({super.key, this.title = "Rotas", this.id = 4});
+  const RotaPage({super.key, this.title = "Rotas"});
 
   final String title;
-  final int id;
 
   @override
   State<RotaPage> createState() => _RotaPageState();
@@ -22,12 +22,14 @@ class RotaPage extends StatefulWidget {
 class _RotaPageState extends State<RotaPage> {
   late RotasService _rotasService;
   late BdRotaService _bdRotaService;
+  final TokenService  _tokenService = TokenService();
   final ScrollController _scrollController = ScrollController();
-
+  late int id;
   List<RotasModel> rotas = [];
 
   int paginaAtual = 1;
   final int pageSize = 5;
+  
 
   bool isLoading = true;
   bool isLoadingMore = false;
@@ -39,9 +41,11 @@ class _RotaPageState extends State<RotaPage> {
   void initState() {
     super.initState();
 
+
     _rotasService = RotasService(ApiClient());
     _bdRotaService = BdRotaService();
-    buscarRotas();
+
+    adicionaValorId();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -59,6 +63,12 @@ class _RotaPageState extends State<RotaPage> {
     super.dispose();
   }
 
+ 
+Future<void> adicionaValorId() async {
+  id = await _tokenService.getIdPayload() ?? 0; 
+  buscarRotas();
+}
+
   Future<void> buscarRotas() async {
   setState(() {
     isLoading = true;
@@ -67,7 +77,7 @@ class _RotaPageState extends State<RotaPage> {
 
   try {
     final filtro = GetFiltersRotasModel(
-      id: widget.id,
+      id: id,
       page: paginaAtual,
       size: pageSize,
     );
@@ -130,7 +140,7 @@ class _RotaPageState extends State<RotaPage> {
 
   try {
     final filtro = GetFiltersRotasModel(
-      id: widget.id,
+      id: id,
       page: proximaPagina,
       size: pageSize,
     );
@@ -142,7 +152,7 @@ class _RotaPageState extends State<RotaPage> {
 
       if (local.isEmpty) {
         setState(() {
-          hasMore = false; // 🔒 trava chamadas
+          hasMore = false; 
           isLoadingMore = false;
         });
         return;

@@ -85,7 +85,7 @@ class ViewModelRotas extends ChangeNotifier
     // Tenta criar a rota usando o serviço, e captura qualquer erro que possa ocorrer
     try {
       // Chama o método do serviço para criar uma nova rota, passando os dados da nova rota
-      await _rotasService.createRota(data);
+      //await _rotasService.createRota(data);
       // Após criar, recarrega a lista de rotas para refletir a mudança
       await loadRotas(filters);
     } 

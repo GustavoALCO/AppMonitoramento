@@ -14,27 +14,41 @@ class ApiClient {
     Map<String, dynamic>? filters,
     Map<String, dynamic>? headers,
   ) async {
+
     final response = await dio.get(
       endpoint,
       queryParameters: filters,
       options: Options(headers: headers),
     );
+    
     return response.data;
   }
 
   // POST
-  Future<dynamic> post(
-    String endpoint, {
-    required Map<String, dynamic> body,
-    Map<String, dynamic>? headers,
-  }) async {
+Future<Map<String, dynamic>> post(
+  String endpoint, {
+  required Map<String, dynamic> body,
+  Map<String, dynamic>? headers,
+}) async {
+  try {
     final response = await dio.post(
       endpoint,
       data: body,
       options: Options(headers: headers),
     );
-    return response.statusCode;
+
+    // Força String para as chaves e int/dynamic para os valores
+    return <String, dynamic>{
+      'statusCode': response.statusCode, // int
+      'data': response.data,             // dynamic
+    };
+  } on DioException catch (e) {
+    return <String, dynamic>{
+      'statusCode': e.response?.statusCode ?? 0,
+      'data': e.response?.data ?? e.message,
+    };
   }
+}
 
   // POST
   Future<dynamic> login(
