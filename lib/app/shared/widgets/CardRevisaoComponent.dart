@@ -13,7 +13,8 @@ import 'package:monitoramento/core/services/geo_service.dart';
 class CardRevisaoComponent extends StatelessWidget {
   final EvidenciaCardDto evidencia;
   final int count;
-  final Function(int id) onDelete;
+  final Function(String id) onDelete;
+
   final GeoService _geoService = GeoService();
 
   CardRevisaoComponent({
@@ -25,6 +26,15 @@ class CardRevisaoComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> imagens;
+
+    if (evidencia.status.index == StatusMode.local.index) {
+      imagens = List.from(evidencia.originalImage as Iterable<dynamic>);
+    } else {
+      //Se
+      imagens = evidencia.mediumImage!;
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
@@ -37,139 +47,19 @@ class CardRevisaoComponent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// CABEÇALHO
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Data: ${evidencia.horario}",
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color.fromARGB(255, 22, 22, 22),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      "Alimentador: ${evidencia.alimentador ?? "Alimentador não informado"}",
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          "Fiscal: ",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          evidencia.fiscal,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              /// BADGE + MENU
-              Column(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.black),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "$count",
-                        style: const TextStyle(
-                          color: AppColors.secondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'edit':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EvidenciasPage(
-                                mode: EvidenciaMode.alterar,
-                                model: evidencia,
-                                rotaId: evidencia.rotaId,
-                              ),
-                            ),
-                          );
-                          break;
-
-                        case 'delete':
-                          _confirmarExclusao(context);
-                          break;
-
-                        case 'view':
-                          _geoService.openMap(
-                            evidencia.latitude,
-                            evidencia.longitude,
-                          );
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Editar')),
-                      PopupMenuItem(value: 'delete', child: Text('Excluir')),
-                      PopupMenuItem(value: 'view', child: Text('Maps')),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
+          _buildHeader(context),
 
           const SizedBox(height: 12),
 
-          /// IMAGEM
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: evidencia.status.index == StatusMode.local.index
-                  ? Image.file(
-                      File(evidencia.image),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Center(child: Icon(Icons.image_not_supported)),
-                    )
-                  : Image.network(
-                      evidencia.image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Center(child: Icon(Icons.image_not_supported)),
-                    ),
-            ),
-          ),
+          /// IMAGENS
+          if (imagens.isNotEmpty) _buildImages(imagens),
 
           const SizedBox(height: 12),
 
           /// TEMA
           Center(
             child: Text(
-              evidencia.tema.name.toString(),
+              evidencia.tema.name,
               style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
             ),
           ),
@@ -177,65 +67,164 @@ class CardRevisaoComponent extends StatelessWidget {
           const SizedBox(height: 12),
 
           /// ENDEREÇO
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Endereço: ",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              Expanded(
-                child: Text(
-                  evidencia.endereco,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
+          if (evidencia.endereco.isNotEmpty)
+            _buildInfo("Endereço:", evidencia.endereco),
 
           /// IDENTIFICADOR
-          Row(
-            children: [
-              const Text(
-                "Identificador: ",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              Expanded(
-                child: Text(
-                  evidencia.identificacao ?? "Sem Identificação no Poste",
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
+          if (evidencia.identificacao != null &&
+              evidencia.identificacao!.isNotEmpty)
+            _buildInfo("Identificador:", evidencia.identificacao!),
 
           /// DESCRIÇÃO
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Descrição: ",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              Expanded(
-                child: Text(
-                  evidencia.descricao?.isNotEmpty == true
-                      ? evidencia.descricao!
-                      : "Sem descrição informada.",
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
+          if (evidencia.descricao != null && evidencia.descricao!.isNotEmpty)
+            _buildInfo("Descrição:", evidencia.descricao!),
         ],
       ),
     );
   }
 
+  /// HEADER
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Data: ${evidencia.horario}",
+                style: const TextStyle(fontSize: 13),
+              ),
+
+              if (evidencia.alimentador != null)
+                Text(
+                  "Alimentador: ${evidencia.alimentador}",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+              if (evidencia.fiscal.isNotEmpty)
+                Text(
+                  "Fiscal: ${evidencia.fiscal}",
+                  style: const TextStyle(fontSize: 13),
+                ),
+            ],
+          ),
+        ),
+
+        Column(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.black),
+              ),
+              child: Center(
+                child: Text(
+                  "$count",
+                  style: const TextStyle(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                switch (value) {
+                  case 'edit':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EvidenciasPage(
+                          mode: EvidenciaMode.alterar,
+                          model: evidencia,
+                          rotaId: evidencia.rotaId,
+                        ),
+                      ),
+                    );
+                    break;
+
+                  case 'delete':
+                    _confirmarExclusao(context);
+                    break;
+
+                  case 'view':
+                    _geoService.openMap(
+                      evidencia.latitude,
+                      evidencia.longitude,
+                    );
+                    break;
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'edit', child: Text('Editar')),
+                PopupMenuItem(value: 'delete', child: Text('Excluir')),
+                PopupMenuItem(value: 'view', child: Text('Maps')),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// IMAGENS
+  Widget _buildImages(List<String> imagens) {
+    return Column(
+      children: imagens.map((img) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: evidencia.status == StatusMode.local
+                  ? Image.file(
+                      File(img),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Center(child: Icon(Icons.image_not_supported)),
+                    )
+                  : Image.network(
+                      img,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Center(child: Icon(Icons.image_not_supported)),
+                    ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// LINHA DE INFORMAÇÃO
+  Widget _buildInfo(String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          Expanded(child: Text(valor, style: const TextStyle(fontSize: 14))),
+        ],
+      ),
+    );
+  }
+
+  /// CONFIRMAR EXCLUSÃO
   void _confirmarExclusao(BuildContext context) {
     showDialog(
       context: context,
@@ -253,7 +242,7 @@ class CardRevisaoComponent extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              onDelete(evidencia.rotaId);
+              onDelete(evidencia.idEvi);
             },
             child: const Text("Excluir", style: TextStyle(color: Colors.red)),
           ),

@@ -1,15 +1,20 @@
+// ignore_for_file: unnecessary_underscores
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
 import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+
 import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ButtonDeploy.dart';
 import 'package:monitoramento/app/shared/widgets/InputComponent.dart';
 import 'package:monitoramento/app/shared/widgets/SelectBoxComponent.dart';
+
 import 'package:monitoramento/core/services/bd_evidencias_service.dart';
 import 'package:monitoramento/core/services/geo_service.dart';
 import 'package:monitoramento/core/services/image_service.dart';
@@ -44,46 +49,48 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   final identificadorController = TextEditingController();
   final descricaoController = TextEditingController();
 
-  String? imageUrl;
-  XFile? pickedFile;
-  String? pathImage;
   Position? geo;
 
   late TipoConstatacao tipoConstatacao;
 
   bool isLoading = false;
 
+  /// LISTA DE IMAGENS
+  List<String> pathImages = [];
+
   @override
-void initState() {
-  super.initState();
-  _init();
-}
+  void initState() {
+    super.initState();
+    _init();
+  }
 
-Future<void> _init() async {
-  tipoConstatacao = TipoConstatacao.values.first;
-  _tokenService = TokenService();
-  _imageService = ImageService();
-  _geoService = GeoService();
-  _internetService = InternetService();
-  _bdEvidenciasService = BdEvidenciasService();
+  Future<void> _init() async {
+    tipoConstatacao = TipoConstatacao.values.first;
 
-  if (widget.mode == EvidenciaMode.alterar && widget.model != null) {
-    final model = widget.model!;
+    _tokenService = TokenService();
+    _imageService = ImageService();
+    _geoService = GeoService();
+    _internetService = InternetService();
+    _bdEvidenciasService = BdEvidenciasService();
 
-    enderecoController.text = model.endereco;
-    alimentadorController.text = model.alimentador ?? "";
-    identificadorController.text = model.identificacao ?? "";
-    descricaoController.text = model.descricao ?? "";
+    if (widget.mode == EvidenciaMode.alterar && widget.model != null) {
+      final model = widget.model!;
 
-    tipoConstatacao = model.tema;
+      enderecoController.text = model.endereco;
+      alimentadorController.text = model.alimentador ?? "";
+      identificadorController.text = model.identificacao ?? "";
+      descricaoController.text = model.descricao ?? "";
 
-    if (model.status.index == StatusMode.local.index) {
-      pathImage = model.image;
-    } else {
-      imageUrl = model.image;
+      tipoConstatacao = model.tema;
+
+      if (model.status.index == StatusMode.local.index) {
+        pathImages = List.from(model.originalImage as Iterable<dynamic>);
+      } else {
+        //Se
+        pathImages = model.mediumImage!;
+      }
     }
   }
-}
 
   @override
   void dispose() {
@@ -94,134 +101,188 @@ Future<void> _init() async {
     super.dispose();
   }
 
-  void _retornarComAtualizacao(bool sucesso) {
-    if (sucesso) {
-      Navigator.pop(context, sucesso);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.mode == EvidenciaMode.criar
-                ? "Erro ao enviar "
-                : "Erro ao atualizar evidência",
-          ),
-        ),
-      );
+  /// TIRAR FOTO
+  Future<void> _tirarFoto() async {
+    if (pathImages.length >= 3) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Máximo de 3 imagens")));
+      return;
+    }
+
+    final XFile? file = await _imageService.selectCamera();
+
+    if (file == null) return;
+
+    try {
+      await _pegarEndereco();
+
+      final path = await _imageService.salvarImagemLocal(file);
+
+      setState(() {
+        pathImages.add(path);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Erro ao salvar imagem")));
     }
   }
 
- Future<void> _salvarEvidencia() async {
-  setState(() => isLoading = true);
+  /// PEGA GEOLOCALIZAÇÃO
+  Future<void> _pegarEndereco() async {
+    geo = await _geoService.takeGeolocation();
 
-  try {    
-
-    if(widget.mode.index == EvidenciaMode.criar.index)
-    {
-       await _bdEvidenciasService.criarEvidencia(
-        widget.rotaId,
-        await _tokenService.getIdPayload() ?? 0,
-        pathImage ?? "",
+    if (await _internetService.temInternet()) {
+      final adress = await _geoService.TakeAdress(
         geo!.latitude,
         geo!.longitude,
-        enderecoController.text,
-        descricaoController.text,
-        alimentadorController.text,
-        identificadorController.text,
-        tipoConstatacao
       );
-    }
-    else {
-      await _bdEvidenciasService.alterarEvidencia(
-        widget.model!.id,
-        descricaoController.text,
-        enderecoController.text,
-        identificadorController.text,
-        alimentadorController.text
 
-      );
-    }
-
-    if (!mounted) return;
-
-    _retornarComAtualizacao(true);
-  } catch (e) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Erro ao salvar evidência")),
-    );
-  } finally {
-    if (mounted) {
-      setState(() => isLoading = false);
+      enderecoController.text = adress["endereco"] ?? "";
     }
   }
-}
- Future<void> _tirarFoto() async {
-  final XFile? file = await _imageService.selectCamera();
 
-  if (file == null) return;
+  /// SALVAR EVIDENCIA
+  Future<void> _salvarEvidencia() async {
+    if (pathImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("É Necessario Adicionar 1 Fotos")),
+      );
+      return;
+    }
 
-  setState(() {
-    pickedFile = file;
-  });
+    if (enderecoController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("É Necessario Passar o Endereço")),
+      );
+      return;
+    }
 
-  try {
-    // Pega coordenadas e endereço automaticamente caso tenha internet
-    await _pegarEndereco();
-
-    // Salva local e converte em Base64
-    pathImage = await _imageService.salvarImagemLocal(file);
-
-    imageUrl = await _imageService.convertImageBase64(pathImage!);
-    
-  } catch (e) {
-    // ignore: use_build_context_synchronously
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Erro ao pegar endereço ou salvar imagem.\n$e")),
-    );
-  }
-}
-
-  Future<void> _pegarEndereco() async {
     setState(() => isLoading = true);
 
     try {
-      geo = await _geoService.takeGeolocation();
-
-      Map<String, String?> adress = {"endereco": null, "cep": null};
-
-      if (await _internetService.temInternet()) {
-        adress = await _geoService.TakeAdress(geo!.latitude, geo!.longitude);
+      if (widget.mode.index == EvidenciaMode.criar.index) {
+        await _bdEvidenciasService.criarEvidencia(
+          widget.rotaId,
+          await _tokenService.getIdPayload() ?? 0,
+          pathImages,
+          geo!.latitude,
+          geo!.longitude,
+          enderecoController.text,
+          descricaoController.text,
+          alimentadorController.text,
+          identificadorController.text,
+          tipoConstatacao,
+        );
+      } else {
+        await _bdEvidenciasService.alterarEvidencia(
+          widget.model!.idEvi,
+          descricaoController.text,
+          enderecoController.text,
+          identificadorController.text,
+          alimentadorController.text,
+        );
       }
 
-      enderecoController.text = adress["endereco"] ?? "";
+      if (!mounted) return;
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Erro ao salvar evidência")));
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      setState(() => isLoading = false);
     }
   }
 
-  void _openImageDialog(Widget imageWidget) {
+  /// LAYOUT DAS IMAGENS
+  Widget _buildImages() {
+    if (pathImages.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: Icon(Icons.camera_alt, size: 80, color: Colors.grey),
+        ),
+      );
+    }
+
+    if (pathImages.length == 1) {
+      return _imageBox(pathImages[0]);
+    }
+
+    return Row(
+      children: [
+        Expanded(flex: 2, child: _imageBox(pathImages[0])),
+        const SizedBox(width: 6),
+        Expanded(
+          flex: 1,
+          child: Column(
+            children: [
+              if (pathImages.length >= 2)
+                Expanded(child: _imageBox(pathImages[1])),
+              if (pathImages.length >= 3) const SizedBox(height: 6),
+              if (pathImages.length >= 3)
+                Expanded(child: _imageBox(pathImages[2])),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _imageBox(String path) {
+    final bool isNetwork = path.startsWith("http");
+
+    return GestureDetector(
+      onTap: () => _openImageDialog(path),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: isNetwork
+            ? Image.network(
+                path,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                errorBuilder: (_, __, ___) =>
+                    const Center(child: Icon(Icons.image_not_supported)),
+              )
+            : Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+      ),
+    );
+  }
+
+  /// DIALOG COM ZOOM
+  void _openImageDialog(String path) {
+    final bool isNetwork = path.startsWith("http");
+
     showDialog(
       context: context,
       barrierColor: Colors.black,
       builder: (_) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(10),
           child: Stack(
             children: [
               InteractiveViewer(
                 minScale: 1,
                 maxScale: 5,
-                child: Center(child: imageWidget),
+                child: Center(
+                  child: isNetwork
+                      ? Image.network(path)
+                      : Image.file(File(path)),
+                ),
               ),
-
-              /// Botão fechar
               Positioned(
-                top: 10,
-                right: 10,
+                top: 30,
+                right: 30,
                 child: IconButton(
                   icon: const Icon(Icons.close, color: Colors.white, size: 30),
                   onPressed: () => Navigator.pop(context),
@@ -234,91 +295,19 @@ Future<void> _init() async {
     );
   }
 
-  Widget _buildImage() {
-    if (pickedFile != null) {
-      return GestureDetector(
-        onTap: () {
-          _openImageDialog(
-            Image.file(File(pickedFile!.path), fit: BoxFit.contain),
-          );
-        },
-        child: Image.file(File(pickedFile!.path), fit: BoxFit.cover),
-      );
-    }
-
-    if (widget.mode == EvidenciaMode.alterar &&
-        imageUrl != null &&
-        imageUrl!.isNotEmpty) {
-      return GestureDetector(
-        onTap: () {
-          _openImageDialog(Image.network(imageUrl!, fit: BoxFit.contain));
-        },
-        child: Image.network(
-          imageUrl!,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const Center(child: CircularProgressIndicator());
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Icon(Icons.broken_image, size: 60, color: Colors.grey),
-            );
-          },
-        ),
-      );
-    }
-    else if (widget.mode == EvidenciaMode.alterar &&
-        pathImage != null &&
-        pathImage!.isNotEmpty) {
-      return GestureDetector(
-        onTap: () {
-          _openImageDialog(Image.file(File(pathImage!), fit: BoxFit.contain));
-        },
-        child: Image.file(
-          File(pathImage!),
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Icon(Icons.broken_image, size: 60, color: Colors.grey),
-            );
-          },
-        ),
-      );
-    }
-
-    //Icon padrão se não possuir imagem
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Center(
-        child: Icon(Icons.camera_alt, size: 80, color: Colors.grey),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppbarComponent(
-        widget.mode == EvidenciaMode.criar
-            ? "Criar Nova Evidência"
-            : "Alterar Evidência",
-        false,
-      ),
+      appBar: AppbarComponent("Criar Nova Evidência", false),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 16),
-
             Buttondeploy(
               text: "Tirar Foto",
               select: true,
               iconEnabled: true,
-              onPressed: widget.mode == EvidenciaMode.alterar
-                  ? null
-                  : _tirarFoto,
+              onPressed: _tirarFoto,
             ),
 
             const SizedBox(height: 16),
@@ -332,7 +321,7 @@ Future<void> _init() async {
                 ],
               ),
               clipBehavior: Clip.hardEdge,
-              child: _buildImage(),
+              child: _buildImages(),
             ),
 
             const SizedBox(height: 24),
@@ -351,11 +340,8 @@ Future<void> _init() async {
 
             const SizedBox(height: 16),
 
-            InputComponent(
-              label: "Endereço Atual",
-              controller: enderecoController,
-            ),
-  
+            InputComponent(label: "Endereço", controller: enderecoController),
+
             const SizedBox(height: 16),
 
             InputComponent(
@@ -373,7 +359,7 @@ Future<void> _init() async {
             const SizedBox(height: 16),
 
             InputComponent(
-              label: "Observações da Evidência",
+              label: "Observações",
               controller: descricaoController,
             ),
 
@@ -381,9 +367,7 @@ Future<void> _init() async {
 
             Buttondeploy(
               iconEnabled: false,
-              text: widget.mode == EvidenciaMode.criar
-                  ? "Enviar Evidência"
-                  : "Atualizar Evidência",
+              text: "Enviar Evidência",
               select: true,
               onPressed: isLoading ? null : _salvarEvidencia,
             ),
@@ -396,8 +380,6 @@ Future<void> _init() async {
               select: false,
               onPressed: () => Navigator.pop(context, false),
             ),
-
-            const SizedBox(height: 32),
           ],
         ),
       ),

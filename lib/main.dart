@@ -18,10 +18,9 @@ void main() async {
 
   final tokenService = TokenService();
 
-
   bool isAuthenticated = await tokenService.verifyJWT();
   SyncService.instance.start();
-  
+
   runApp(MyApp(isAuthenticated: isAuthenticated));
 }
 
@@ -44,7 +43,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           scaffoldBackgroundColor: const Color.fromARGB(232, 255, 252, 240),
         ),
-        
+
         debugShowCheckedModeBanner: false,
 
         // Define rota inicial automaticamente
@@ -65,10 +64,7 @@ class MyApp extends StatelessWidget {
           '/criarEvidencia': (context) {
             final id = ModalRoute.of(context)!.settings.arguments as int;
 
-            return EvidenciasPage(
-              mode: EvidenciaMode.criar,
-              rotaId: id,
-            );
+            return EvidenciasPage(mode: EvidenciaMode.criar, rotaId: id);
           },
 
           '/alterarEvidencia': (context) {
@@ -78,7 +74,7 @@ class MyApp extends StatelessWidget {
             return EvidenciasPage(
               mode: EvidenciaMode.alterar,
               model: model,
-              rotaId: model.id,
+              rotaId: model.rotaId,
             );
           },
         },

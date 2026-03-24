@@ -7,11 +7,10 @@ class Bottomappbarcomponent extends StatelessWidget {
   const Bottomappbarcomponent({
     super.key,
     required this.rota,
-    required this.id,
+    required this.rotaid,
   });
-  final int id;
+  final int rotaid;
   final String rota;
-  
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +31,10 @@ class Bottomappbarcomponent extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            EvidenciasPage(mode: EvidenciaMode.criar, rotaId: id),
+                        builder: (_) => EvidenciasPage(
+                          mode: EvidenciaMode.criar,
+                          rotaId: rotaid,
+                        ),
                       ),
                     );
                   },

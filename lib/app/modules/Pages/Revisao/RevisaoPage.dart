@@ -1,4 +1,6 @@
 // ignore_for_file: unnecessary_null_comparison
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
@@ -73,14 +75,16 @@ class _RevisaopageState extends State<Revisaopage> {
 
   EvidenciaCardDto evidenciaApiToDto(EvidenciaModel evi) {
     return EvidenciaCardDto(
-      id: evi.evidenciaRotaId,
+      idEvi: evi.evidenciaRotaId,
       rotaId: evi.rotaId,
       fiscal: evi.fiscal,
       descricao: evi.descricao,
       endereco: evi.endereco,
       identificacao: evi.identificacao,
       alimentador: evi.alimentador,
-      image: evi.imageURL,
+      lowImage: evi.lowImageUrl,
+      mediumImage: evi.mediumImageUrl,
+      originalImage: evi.imageURL,
       horario: evi.horario.toString(),
       latitude: evi.latitude,
       longitude: evi.longitude,
@@ -154,51 +158,68 @@ class _RevisaopageState extends State<Revisaopage> {
   }
 
   Future<void> buscaLocal() async {
+    List<EvidenciaCardDto> listaTemp = [];
 
-  List<EvidenciaCardDto> listaTemp = [];
+    var evilocal = await _service.buscarEvidenciasID(widget.id);
 
-  var evilocal = await _service.buscarEvidenciasID(widget.id);
+    final fiscal = await _tokenService.getNameFiscal() ?? "";
 
-  final fiscal = await _tokenService.getNameFiscal() ?? "";
+    if (evilocal.isEmpty) return;
 
-  for (var evi in evilocal) {
-    listaTemp.add(
-      EvidenciaCardDto(
-        id: evi.idEvi,
-        rotaId: evi.idRota,
-        fiscal: fiscal,
-        descricao: evi.descricao,
-        endereco: evi.endereco,
-        identificacao: evi.identificacao,
-        alimentador: evi.alimentador,
-        image: evi.image,
-        horario: "${evi.horario}Z",
-        latitude: evi.lat,
-        longitude: evi.long,
-        tema: evi.tema,
-        status: StatusMode.local,
-      ),
-    );
+    for (var evi in evilocal) {
+      listaTemp.add(
+        EvidenciaCardDto(
+          idEvi: evi.evidenciaId,
+          rotaId: evi.idRota,
+          fiscal: fiscal,
+          descricao: evi.descricao,
+          endereco: evi.endereco,
+          identificacao: evi.identificacao,
+          alimentador: evi.alimentador,
+          originalImage: List<String>.from(jsonDecode(evi.image)),
+          horario: "${evi.horario}Z",
+          latitude: evi.lat,
+          longitude: evi.long,
+          tema: evi.tema,
+          status: StatusMode.local,
+        ),
+      );
+    }
+
+    listaTemp.sort((a, b) => a.horario.compareTo(b.horario));
+
+    final horariosJaCarregados = revisoes.map((e) => e.horario).toSet();
+
+    final novas = listaTemp
+        .where((e) => !horariosJaCarregados.contains(e.horario))
+        .toList();
+
+    setState(() {
+      revisoes.addAll(novas);
+      isLoading = false;
+      hasMore = false;
+    });
   }
 
-  listaTemp.sort((a, b) => a.horario.compareTo(b.horario));
-
-  final horariosJaCarregados = revisoes.map((e) => e.horario).toSet();
-
-  final novas = listaTemp
-      .where((e) => !horariosJaCarregados.contains(e.horario))
-      .toList();
-
-  setState(() {
-    revisoes.addAll(novas);
-    isLoading = false;
-    hasMore = false;
-  });
-}
-
-  Future<void> _excluirEvidencia(int id) async {
-    await _service.excluirEvidencia(id);
-    carregarDados();
+  Future<void> _excluirEvidencia(String id) async {
+    try {
+      await _service.excluirEvidencia(id);
+      setState(() {
+        // ignore: unrelated_type_equality_checks
+        revisoes.removeWhere((e) => e.idEvi == id);
+      });
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Erro ao Excluir Evidencia. ",
+            style: const TextStyle(color: AppColors.cards),
+          ),
+          backgroundColor: AppColors.secondary,
+        ),
+      );
+    }
   }
 
   Future<void> _abrirCriarEvidencia() async {

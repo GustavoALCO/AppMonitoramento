@@ -6,8 +6,7 @@ import 'package:monitoramento/app/shared/enums/enumSharedMode.dart';
 // <- essencial
 
 class Evidenciastable extends Table {
-
-  IntColumn get idEvi => integer().autoIncrement()();
+  TextColumn get evidenciaId => text()();
 
   IntColumn get idRota => integer()();
 
@@ -30,8 +29,7 @@ class Evidenciastable extends Table {
 
   RealColumn get long => real()();
 
-  DateTimeColumn get horario =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get horario => dateTime().withDefault(currentDateAndTime)();
 
   IntColumn get status =>
       intEnum<StatusMode>().withDefault(const Constant(0))();

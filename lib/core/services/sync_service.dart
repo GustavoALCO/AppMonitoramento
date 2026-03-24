@@ -45,11 +45,13 @@ class SyncService {
     });
   }
 
-  /// verifica internet real
   Future<bool> _temInternet() async {
     try {
-      final result = await InternetAddress.lookup('google.com');
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      final List<ConnectivityResult> results = await Connectivity()
+          .checkConnectivity();
+
+      // Retorna true se a lista de conexões contém Wi-Fi
+      return results.contains(ConnectivityResult.wifi);
     } catch (_) {
       return false;
     }
@@ -73,17 +75,19 @@ class SyncService {
       //Loop para verificar se há mais de 1 dia a evidencia no celular
       for (var evi in evidencias) {
         if (evi.status != StatusMode.local) {
-          final agora = DateTime.now();
+          // Se a evidencia já foi enviada e tiver vais de 1 dia
+          if (evi.status == StatusMode.enviado) {
+            final agora = DateTime.now();
 
-          if (agora.difference(evi.horario).inHours >= 24) {
-            await _bd.excluirEvidencia(evi.idEvi);
-
-            continue;
+            if (agora.difference(evi.horario).inHours >= 24) {
+              await _bd.excluirEvidencia(evi.evidenciaId);
+              continue;
+            }
           }
         }
 
         try {
-          if (evi.action.index == SharedMode.create.index &&
+          if (evi.action.index == SharedMode.create.index ||
               evi.status.index != StatusMode.enviado.index) {
             await _enviarCreate(evi);
           } else if (evi.action.index == SharedMode.update.index &&
@@ -92,7 +96,7 @@ class SyncService {
           }
           // ignore: empty_catches
         } catch (e) {
-          _bd.alterarStatus(evi.idEvi, StatusMode.erro);
+          _bd.alterarStatus(evi.evidenciaId, StatusMode.erro);
         }
       }
       // ignore: empty_catches
@@ -103,22 +107,30 @@ class SyncService {
 
   /// envia evidência nova
   Future<void> _enviarCreate(dynamic evi) async {
-    String base64 = "";
+    List<String> base64 = [];
 
-    if (evi.image.isNotEmpty && File(evi.image).existsSync()) {
-      base64 = await _imageService.convertImageBase64(evi.image);
+    /// converte json -> lista
+    List<String> imagens = _bd.converterImagens(evi.image);
+
+    for (var path in imagens) {
+      if (File(path).existsSync()) {
+        final imageBase64 = await _imageService.convertImageBase64(path);
+
+        base64.add(imageBase64);
+      }
     }
 
     final model = CreateEvidenciasModel(
+      evidenciarotaID: evi.evidenciaId,
       rotaId: evi.idRota,
       fiscalId: evi.idFiscal,
       descricao: evi.descricao,
       dataHora: evi.horario,
-      identificacao: evi.identificacao ?? "",
+      identificacao: evi.identificacao,
       endereco: evi.endereco,
       latitude: evi.lat,
       longitude: evi.long,
-      alimentador: evi.alimentador ?? "",
+      alimentador: evi.alimentador,
       base64: base64,
       tema: evi.tema.index,
     );
@@ -127,19 +139,19 @@ class SyncService {
       final sucesso = await _service.post(model);
 
       if (sucesso) {
-        await _bd.alterarStatus(evi.idEvi, StatusMode.enviado);
+        await _bd.alterarStatus(evi.evidenciaId, StatusMode.enviado);
       } else {
-        await _bd.alterarStatus(evi.idEvi, StatusMode.erro);
+        await _bd.alterarStatus(evi.evidenciaId, StatusMode.erro);
       }
-    } catch (ex) {
-      await _bd.alterarStatus(evi.idEvi, StatusMode.erro);
+    } catch (e) {
+      await _bd.alterarStatus(evi.evidenciaId, StatusMode.erro);
     }
   }
 
   /// atualiza evidência
   Future<void> _enviarUpdate(dynamic evi) async {
     final model = UpdateEvidenciasModel(
-      id: evi.idEvi,
+      evidenciaID: evi.evidenciaId,
       descricao: evi.descricao,
       identificacao: evi.identificacao,
       endereco: evi.endereco,
@@ -150,9 +162,9 @@ class SyncService {
     final sucesso = await _service.patch(model);
 
     if (sucesso) {
-      await _bd.alterarStatus(evi.idEvi, StatusMode.enviado);
+      await _bd.alterarStatus(evi.evidenciaId, StatusMode.enviado);
     } else {
-      await _bd.alterarStatus(evi.idEvi, StatusMode.erro);
+      await _bd.alterarStatus(evi.evidenciaId, StatusMode.erro);
     }
   }
 

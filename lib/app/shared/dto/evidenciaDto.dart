@@ -2,14 +2,16 @@ import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 
 class EvidenciaCardDto {
-  final int id;
+  final String idEvi;
   final int rotaId;
   final String fiscal;
   final String? descricao;
   final String endereco;
   final String? identificacao;
   final String? alimentador;
-  final String image;
+  final List<String>? lowImage;
+  final List<String>? mediumImage;
+  final List<String> originalImage;
   final String horario;
   final double latitude;
   final double longitude;
@@ -17,14 +19,16 @@ class EvidenciaCardDto {
   final StatusMode status;
 
   EvidenciaCardDto({
-    required this.id,
+    required this.idEvi,
     required this.rotaId,
     required this.fiscal,
     required this.descricao,
     required this.endereco,
     required this.identificacao,
     required this.alimentador,
-    required this.image,
+    this.lowImage,
+    this.mediumImage,
+    required this.originalImage,
     required this.horario,
     required this.latitude,
     required this.longitude,

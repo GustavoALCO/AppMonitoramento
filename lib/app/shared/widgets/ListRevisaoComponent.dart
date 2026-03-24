@@ -4,7 +4,7 @@ import 'package:monitoramento/app/shared/widgets/CardRevisaoComponent.dart';
 
 class ListRevisaoComponent extends StatelessWidget {
   final List<EvidenciaCardDto> revisoes;
-  final Function(int id) onDelete;
+  final Function(String id) onDelete;
   final ScrollController controller;
   final bool isLoadingMore;
 

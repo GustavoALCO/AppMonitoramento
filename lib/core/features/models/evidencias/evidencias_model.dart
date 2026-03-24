@@ -1,13 +1,15 @@
 import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 
 class EvidenciaModel {
-  final int evidenciaRotaId;
+  final String evidenciaRotaId;
   final int rotaId;
   final String fiscal;
   final String? alimentador;
   final String? identificacao;
   final String? descricao;
-  final String imageURL;
+  final List<String> imageURL;
+  final List<String> mediumImageUrl;
+  final List<String> lowImageUrl;
   final String endereco;
   final double latitude;
   final double longitude;
@@ -23,10 +25,12 @@ class EvidenciaModel {
     required this.identificacao,
     required this.descricao,
     required this.imageURL,
+    required this.mediumImageUrl,
+    required this.lowImageUrl,
     required this.endereco,
     required this.horario,
     required this.latitude,
-    required this.longitude
+    required this.longitude,
   });
 
   // Converte JSON da API para objeto Dart
@@ -35,15 +39,17 @@ class EvidenciaModel {
       evidenciaRotaId: json['evidenciaRotaId'],
       rotaId: json['rotaId'],
       fiscal: json['nomeFiscal'],
-      temaFiscalizacao: TipoConstatacao.values[ json['temaFiscalizacao']],
+      temaFiscalizacao: TipoConstatacao.values[json['temaFiscalizacao']],
       alimentador: json['alimentador'],
       identificacao: json['identificacao'],
       descricao: json['descricao'],
-      imageURL: json['imageURL'],
+      imageURL: List<String>.from(json['imageURL']),
+      mediumImageUrl: List<String>.from(json['mediumImageUrl']),
+      lowImageUrl: List<String>.from(json['lowImageUrl']),
       endereco: json['endereco'],
       horario: DateTime.parse(json['horario']),
       latitude: json['latitude'],
-      longitude: json['longitude']
+      longitude: json['longitude'],
     );
   }
 }
