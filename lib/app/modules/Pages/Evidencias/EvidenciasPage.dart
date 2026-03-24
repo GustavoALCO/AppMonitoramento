@@ -55,7 +55,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
   bool isLoading = false;
 
-  /// LISTA DE IMAGENS
+  // LISTA DE IMAGENS
   List<String> pathImages = [];
 
   @override
@@ -101,7 +101,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     super.dispose();
   }
 
-  /// TIRAR FOTO
+  // TIRAR FOTO
   Future<void> _tirarFoto() async {
     if (pathImages.length >= 3) {
       ScaffoldMessenger.of(
@@ -130,7 +130,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     }
   }
 
-  /// PEGA GEOLOCALIZAÇÃO
+  // PEGA GEOLOCALIZAÇÃO
   Future<void> _pegarEndereco() async {
     geo = await _geoService.takeGeolocation();
 
@@ -144,7 +144,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     }
   }
 
-  /// SALVAR EVIDENCIA
+  // SALVAR EVIDENCIA
   Future<void> _salvarEvidencia() async {
     if (pathImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +188,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
       if (!mounted) return;
 
-      Navigator.pop(context, true);
+      Navigator.popAndPushNamed(context, "/revisao", arguments: widget.rotaId);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -198,7 +198,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     }
   }
 
-  /// LAYOUT DAS IMAGENS
+  // LAYOUT DAS IMAGENS
   Widget _buildImages() {
     if (pathImages.isEmpty) {
       return Container(
@@ -259,7 +259,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     );
   }
 
-  /// DIALOG COM ZOOM
+  // DIALOG COM ZOOM
   void _openImageDialog(String path) {
     final bool isNetwork = path.startsWith("http");
 
@@ -307,7 +307,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
               text: "Tirar Foto",
               select: true,
               iconEnabled: true,
-              onPressed: _tirarFoto,
+              onPressed: widget.mode.index == EvidenciaMode.alterar.index ? null : _tirarFoto,
             ),
 
             const SizedBox(height: 16),
@@ -367,7 +367,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
             Buttondeploy(
               iconEnabled: false,
-              text: "Enviar Evidência",
+              text: widget.mode.index == EvidenciaMode.alterar.index ? "Alterar Evidências" : "Enviar Evidências",
               select: true,
               onPressed: isLoading ? null : _salvarEvidencia,
             ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
+import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/widgets/CardRevisaoComponent.dart';
 
 class ListRevisaoComponent extends StatelessWidget {
   final List<EvidenciaCardDto> revisoes;
-  final Function(String id) onDelete;
+  final Function(String id, StatusMode mode) onDelete;
   final ScrollController controller;
   final bool isLoadingMore;
 

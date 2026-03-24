@@ -81,8 +81,11 @@ class _RotaPageState extends State<RotaPage> {
 
       final resultadoApi = await _rotasService.getRotas(filtro);
 
+      //verifica se o valor do resultado é maior que 0
+      bool atingiuLimite  = resultadoApi.length / 2 > 0;
+
       /// API trouxe dados
-      if (resultadoApi.isNotEmpty) {
+      if (resultadoApi.isNotEmpty | atingiuLimite) {
         setState(() {
           rotas = resultadoApi;
           hasMore = resultadoApi.length == pageSize;
@@ -144,7 +147,11 @@ class _RotaPageState extends State<RotaPage> {
 
       final resultado = await _rotasService.getRotas(filtro);
 
-      if (resultado.isEmpty) {
+      //verifica se o valor do resultado é maior que 0
+      bool atingiuLimite  = resultado.length / 2 > 0;
+
+      //Mostra evidencias do banco local caso o resultado de evidencias for nulo ou true
+      if (resultado.isEmpty | atingiuLimite) {
         final local = await _bdRotaService.buscarRotas(proximaPagina, pageSize);
 
         if (local.isEmpty) {

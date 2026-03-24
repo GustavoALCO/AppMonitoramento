@@ -40,7 +40,7 @@ class EvidenciasService {
     return (data as List<EvidenciaModel>).map((e) => e).toList();
   }
 
-  Future<int> deleteEvidencia(int id) async {
+  Future<int> deleteEvidencia(String id) async {
     // Faz a requisição DELETE para o endpoint de evidências, passando o ID da evidência a ser deletada
     final response = await _apiClient.delete(
       '${ApiRoutes.evidencia}?command=$id',{

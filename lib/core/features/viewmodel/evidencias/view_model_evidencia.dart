@@ -69,7 +69,7 @@ class ViewModelEvidencia extends ChangeNotifier
     notifyListeners();
   }
 
-  void deleteEvidencia(int id,int idFiscal, int page, int pageSize) async {
+  void deleteEvidencia(String  id,int idFiscal, int page, int pageSize) async {
     try {
       var response = await _serviceEvidencia.deleteEvidencia(id);
       if (response == 200) {

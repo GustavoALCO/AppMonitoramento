@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +11,8 @@ class ImageService {
     try {
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear
+        
       );
 
       return pickedFile;

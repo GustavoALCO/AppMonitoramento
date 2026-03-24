@@ -84,7 +84,7 @@ class _RevisaopageState extends State<Revisaopage> {
       alimentador: evi.alimentador,
       lowImage: evi.lowImageUrl,
       mediumImage: evi.mediumImageUrl,
-      originalImage: evi.imageURL,
+      originalImage: evi.lowImageUrl,
       horario: evi.horario.toString(),
       latitude: evi.latitude,
       longitude: evi.longitude,
@@ -142,6 +142,15 @@ class _RevisaopageState extends State<Revisaopage> {
         novas.add(evidenciaApiToDto(evi));
       }
 
+      //verifica se o valor passado é maior que igual a 0 
+      bool atingiuLimite  = evicloud.length / 2 > 0;
+
+      //caso não for maior manda buscar mais evidencias no local
+      if (atingiuLimite)
+      {
+        buscaLocal();
+      }
+      
       setState(() {
         paginaAtual = proximaPagina;
         revisoes.addAll(novas);
@@ -201,13 +210,23 @@ class _RevisaopageState extends State<Revisaopage> {
     });
   }
 
-  Future<void> _excluirEvidencia(String id) async {
+  Future<void> _excluirEvidencia(String id, StatusMode mode) async {
     try {
-      await _service.excluirEvidencia(id);
-      setState(() {
-        // ignore: unrelated_type_equality_checks
-        revisoes.removeWhere((e) => e.idEvi == id);
-      });
+      if (mode == StatusMode.enviado) {
+        
+         await _evidenciasService.deleteEvidencia(id);
+        setState(() {
+          // ignore: unrelated_type_equality_checks
+          revisoes.removeWhere((e) => e.idEvi == id);
+        });
+      }
+      
+       await _service.excluirEvidencia(id);
+        setState(() {
+          // ignore: unrelated_type_equality_checks
+          revisoes.removeWhere((e) => e.idEvi == id);
+        });
+      
     } catch (e) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
@@ -223,7 +242,7 @@ class _RevisaopageState extends State<Revisaopage> {
   }
 
   Future<void> _abrirCriarEvidencia() async {
-    final result = await Navigator.pushNamed(
+    final result = await Navigator.popAndPushNamed(
       context,
       "/criarEvidencia",
       arguments: widget.id,

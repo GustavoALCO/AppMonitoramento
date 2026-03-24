@@ -13,7 +13,7 @@ import 'package:monitoramento/core/services/geo_service.dart';
 class CardRevisaoComponent extends StatelessWidget {
   final EvidenciaCardDto evidencia;
   final int count;
-  final Function(String id) onDelete;
+  final Function(String id, StatusMode mode) onDelete;
 
   final GeoService _geoService = GeoService();
 
@@ -86,18 +86,19 @@ class CardRevisaoComponent extends StatelessWidget {
   /// HEADER
   Widget _buildHeader(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _statusCard(evidencia.status),
               Text(
                 "Data: ${evidencia.horario}",
                 style: const TextStyle(fontSize: 13),
               ),
 
-              if (evidencia.alimentador != null)
+              if (evidencia.alimentador!.isNotEmpty)
                 Text(
                   "Alimentador: ${evidencia.alimentador}",
                   style: const TextStyle(
@@ -179,35 +180,37 @@ class CardRevisaoComponent extends StatelessWidget {
 
   /// IMAGENS
   Widget _buildImages(List<String> imagens) {
-    return Column(
-      children: imagens.map((img) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: evidencia.status == StatusMode.local
-                  ? Image.file(
-                      File(img),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Center(child: Icon(Icons.image_not_supported)),
-                    )
-                  : Image.network(
-                      img,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Center(child: Icon(Icons.image_not_supported)),
-                    ),
-            ),
-          ),
-        );
-      }).toList(),
+    if (imagens.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 300,
+      child: PageView.builder(
+        itemCount: imagens.length,
+        itemBuilder: (context, index) {
+          final img = imagens[index];
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1),
+
+            child: evidencia.status == StatusMode.local
+                ? Image.file(
+                    File(img),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        const Center(child: Icon(Icons.image_not_supported)),
+                  )
+                : Image.network(
+                    img,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        const Center(child: Icon(Icons.image_not_supported)),
+                  ),
+          );
+        },
+      ),
     );
   }
 
-  /// LINHA DE INFORMAÇÃO
   Widget _buildInfo(String titulo, String valor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -222,6 +225,24 @@ class CardRevisaoComponent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _statusCard(StatusMode mode) {
+    Icon icon;
+
+    switch (mode) {
+      case StatusMode.local:
+        icon = const Icon(Icons.sd_storage, size: 17);
+        break;
+      case StatusMode.enviado:
+        icon = const Icon(Icons.cloud_upload, size: 17);
+        break;
+      case StatusMode.erro:
+        icon = const Icon(Icons.error, size: 17);
+        break;
+    }
+
+    return Padding(padding: const EdgeInsets.all(5), child: icon);
   }
 
   /// CONFIRMAR EXCLUSÃO
@@ -242,7 +263,7 @@ class CardRevisaoComponent extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              onDelete(evidencia.idEvi);
+              onDelete(evidencia.idEvi, evidencia.status);
             },
             child: const Text("Excluir", style: TextStyle(color: Colors.red)),
           ),
