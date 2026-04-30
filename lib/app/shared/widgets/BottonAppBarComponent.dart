@@ -9,7 +9,7 @@ class Bottomappbarcomponent extends StatelessWidget {
     required this.rota,
     required this.rotaid,
   });
-  final int rotaid;
+  final String rotaid;
   final String rota;
 
   @override

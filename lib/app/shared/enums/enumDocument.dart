@@ -1,0 +1,5 @@
+enum ZipMode
+{
+  Relatorio,
+  Oficio
+}

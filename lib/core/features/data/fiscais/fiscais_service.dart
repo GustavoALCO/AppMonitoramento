@@ -12,40 +12,21 @@ class FiscaisService {
 
   // Método para obter a lista de fiscais
   Future<List<FiscaisModel>> getFiscais() async {
-    // Faz a requisição GET para o endpoint de fiscais
-    final data = await _apiClient.get(ApiRoutes.fiscais, null, {
+  final response = await _apiClient.get(
+    "${ApiRoutes.fiscais}/TodosFiscais",
+    null,
+    {
       "Authorization": "Bearer ${await jwt.returnToken()}",
       "Content-Type": "application/json",
-    });
-    // Converte a resposta em uma lista de objetos FiscaisModel
-    return (data as List<FiscaisModel>).map((json) => json).toList();
-  }
+    },
+  );
 
-  // // Método para criar um novo fiscal
-  // Future<String> createFiscal(CreateFiscaisModel data) async {
-  //   // Faz a requisição POST para o endpoint de fiscais, passando os dados do novo fiscal no corpo da requisição
-  //   final response = await _apiClient.post(
-  //     ApiRoutes.fiscais,
-  //     body: data.toJson(),
-  //     headers: {
-  //       "Authorization": "Bearer ${await jwt.returnToken()}",
-  //       "Content-Type": "application/json",
-  //     },
-  //   );
-  //   // Retorna a resposta da API (pode ser uma mensagem de sucesso ou o ID do novo fiscal criado)
-  //   return response.statusCode.toString();
-  // }
+  final List list = response as List; // 👈 FORÇA AQUI
 
-  // Método para deletar um fiscal
-  Future<String> deleteFiscal(int id) async {
-    // Faz a requisição DELETE para o endpoint de fiscais, passando o ID do fiscal a ser deletado
-    final response = await _apiClient.delete('${ApiRoutes.fiscais}/$id', {
-      "Authorization": "Bearer ${await jwt.returnToken()}",
-      "Content-Type": "application/json",
-    });
-    // Retorna a resposta da API (pode ser uma mensagem de sucesso ou um status code)
-    return response.statusCode.toString();
-  }
+  return list
+      .map((e) => FiscaisModel.fromJson(e))
+      .toList();
+}
 
   // Método para atualizar um fiscal
   Future<String> updateFiscal(UpdateFiscaisModel data) async {

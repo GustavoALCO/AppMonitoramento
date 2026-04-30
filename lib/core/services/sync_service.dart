@@ -49,7 +49,6 @@ class SyncService {
     try {
       final List<ConnectivityResult> results = await Connectivity()
           .checkConnectivity();
-
       // Retorna true se a lista de conexões contém Wi-Fi
       return results.contains(ConnectivityResult.wifi);
     } catch (_) {
@@ -59,6 +58,8 @@ class SyncService {
 
   /// sincronização principal
   Future<void> sincronizar() async {
+
+    
     if (_isSyncing) {
       return;
     }
@@ -71,7 +72,6 @@ class SyncService {
 
     try {
       final evidencias = await _bd.buscarEvidencias();
-
       //Loop para verificar se há mais de 1 dia a evidencia no celular
       for (var evi in evidencias) {
         if (evi.status != StatusMode.local) {
@@ -79,7 +79,7 @@ class SyncService {
           if (evi.status == StatusMode.enviado) {
             final agora = DateTime.now();
 
-            if (agora.difference(evi.horario).inHours >= 24) {
+            if (agora.difference(evi.horario!).inHours >= 24) {
               await _bd.excluirEvidencia(evi.evidenciaId);
               continue;
             }
@@ -87,7 +87,7 @@ class SyncService {
         }
 
         try {
-          if (evi.action.index == SharedMode.create.index ||
+          if (evi.action.index == SharedMode.create.index &&
               evi.status.index != StatusMode.enviado.index) {
             await _enviarCreate(evi);
           } else if (evi.action.index == SharedMode.update.index &&
@@ -128,11 +128,13 @@ class SyncService {
       dataHora: evi.horario,
       identificacao: evi.identificacao,
       endereco: evi.endereco,
+      cidade: evi.cidade,
       latitude: evi.lat,
       longitude: evi.long,
       alimentador: evi.alimentador,
       base64: base64,
       tema: evi.tema.index,
+      emergencial: evi.emergencial,
     );
 
     try {
@@ -157,6 +159,7 @@ class SyncService {
       endereco: evi.endereco,
       alimentador: evi.alimentador,
       tema: evi.tema.index,
+      emergencial: evi.emergencial,
     );
 
     final sucesso = await _service.patch(model);

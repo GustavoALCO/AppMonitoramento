@@ -1,14 +1,19 @@
 import 'package:drift/drift.dart';
+import 'package:monitoramento/app/shared/enums/enumConc.dart';
 import 'package:monitoramento/data/database/app_database.dart';
+import 'package:uuid/uuid.dart';
 
 class BdRotaService {
   final database = AppDatabase.instance;
-
-  Future<void> criarRotas(
-    int idRota,
+  final uuid = Uuid();
+  
+  Future<void> adicionarRota(
+    String idRota,
     String alimentador,
     String dataInicio,
     String nomeRota,
+    Conc conc,
+    double? km
   ) async {
     await database
         .into(database.rotastable)
@@ -18,6 +23,27 @@ class BdRotaService {
             alimentador: Value(alimentador),
             dataInicio: Value(dataInicio),
             nomeRota: Value(nomeRota),
+            conc: Value(conc),
+            km: Value(km)
+          ),
+        );
+  }
+
+  Future<void> criarRotas(
+    String alimentador,
+    String dataInicio,
+    String nomeRota,
+    Conc conc,
+  ) async {
+    await database
+        .into(database.rotastable)
+        .insert(
+          RotastableCompanion(
+            idRota: Value(uuid.v4()),
+            alimentador: Value(alimentador),
+            dataInicio: Value(dataInicio),
+            nomeRota: Value(nomeRota),
+            conc: Value(conc)
           ),
         );
   }

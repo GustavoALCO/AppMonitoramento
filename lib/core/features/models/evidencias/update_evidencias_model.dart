@@ -5,6 +5,7 @@ class UpdateEvidenciasModel {
   final String? alimentador;
   final String? endereco;
   final String? identificacao;
+  final bool? emergencial;
 
   UpdateEvidenciasModel({
     required this.evidenciaID,
@@ -13,6 +14,7 @@ class UpdateEvidenciasModel {
     this.alimentador,
     this.endereco,
     this.identificacao,
+    this.emergencial,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class UpdateEvidenciasModel {
       if (alimentador != null) 'alimentador': "$alimentador",
       if (endereco != null) 'endereco': "$endereco",
       if (identificacao != null) 'identificacao': "$identificacao",
+      if (emergencial != null) 'emergencial': emergencial,
     };
   }
 }

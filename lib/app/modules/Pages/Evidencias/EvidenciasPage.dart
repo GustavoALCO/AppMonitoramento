@@ -23,7 +23,7 @@ import 'package:monitoramento/core/services/token_service.dart';
 
 class EvidenciasPage extends StatefulWidget {
   final EvidenciaMode mode;
-  final int rotaId;
+  final String rotaId;
   final EvidenciaCardDto? model;
 
   const EvidenciasPage({
@@ -45,6 +45,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   late BdEvidenciasService _bdEvidenciasService;
 
   final enderecoController = TextEditingController();
+  final cidadeController = TextEditingController();
   final alimentadorController = TextEditingController();
   final identificadorController = TextEditingController();
   final descricaoController = TextEditingController();
@@ -52,6 +53,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   Position? geo;
 
   late TipoConstatacao tipoConstatacao;
+  bool emergencial = false;
 
   bool isLoading = false;
 
@@ -77,6 +79,8 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       final model = widget.model!;
 
       enderecoController.text = model.endereco;
+      cidadeController.text = model.cidade;
+      emergencial = model.emergencial;
       alimentadorController.text = model.alimentador ?? "";
       identificadorController.text = model.identificacao ?? "";
       descricaoController.text = model.descricao ?? "";
@@ -95,6 +99,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   @override
   void dispose() {
     enderecoController.dispose();
+    cidadeController.dispose();
     alimentadorController.dispose();
     identificadorController.dispose();
     descricaoController.dispose();
@@ -141,6 +146,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       );
 
       enderecoController.text = adress["endereco"] ?? "";
+      cidadeController.text = adress["cidade"] ?? "Não encontrada";
     }
   }
 
@@ -149,13 +155,6 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     if (pathImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("É Necessario Adicionar 1 Fotos")),
-      );
-      return;
-    }
-
-    if (enderecoController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("É Necessario Passar o Endereço")),
       );
       return;
     }
@@ -171,18 +170,23 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
           geo!.latitude,
           geo!.longitude,
           enderecoController.text,
+          cidadeController.text,
           descricaoController.text,
           alimentadorController.text,
           identificadorController.text,
           tipoConstatacao,
+          emergencial,
         );
       } else {
         await _bdEvidenciasService.alterarEvidencia(
+          widget.model!.status,
+          widget.model!.rotaId,
           widget.model!.idEvi,
           descricaoController.text,
           enderecoController.text,
           identificadorController.text,
           alimentadorController.text,
+          emergencial,
         );
       }
 
@@ -307,7 +311,9 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
               text: "Tirar Foto",
               select: true,
               iconEnabled: true,
-              onPressed: widget.mode.index == EvidenciaMode.alterar.index ? null : _tirarFoto,
+              onPressed: widget.mode.index == EvidenciaMode.alterar.index
+                  ? null
+                  : _tirarFoto,
             ),
 
             const SizedBox(height: 16),
@@ -324,7 +330,27 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
               child: _buildImages(),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Checkbox(
+                  value: emergencial,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      emergencial = value!;
+                    });
+                  },
+                ),
+                const Text(
+                  "Evidência Emergencial",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
 
             Selectboxcomponent<TipoConstatacao>(
               label: "Tipo de Constatação",
@@ -341,6 +367,10 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
             const SizedBox(height: 16),
 
             InputComponent(label: "Endereço", controller: enderecoController),
+
+            const SizedBox(height: 16),
+
+            InputComponent(label: "Cidade", controller: cidadeController),
 
             const SizedBox(height: 16),
 
@@ -367,7 +397,9 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
             Buttondeploy(
               iconEnabled: false,
-              text: widget.mode.index == EvidenciaMode.alterar.index ? "Alterar Evidências" : "Enviar Evidências",
+              text: widget.mode.index == EvidenciaMode.alterar.index
+                  ? "Alterar Evidências"
+                  : "Enviar Evidências",
               select: true,
               onPressed: isLoading ? null : _salvarEvidencia,
             ),

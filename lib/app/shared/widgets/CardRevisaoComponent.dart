@@ -3,9 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:monitoramento/app/modules/Pages/Evidencias/EvidenciasPage.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
-import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 import 'package:monitoramento/core/services/geo_service.dart';
@@ -42,6 +40,10 @@ class CardRevisaoComponent extends StatelessWidget {
         color: const Color.fromARGB(255, 232, 232, 232),
         borderRadius: BorderRadius.circular(8),
         boxShadow: const [BoxShadow(blurRadius: 4, offset: Offset(0, 2))],
+
+        border: evidencia.emergencial
+            ? Border.all(color: AppColors.primary, width: 2)
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,15 +144,10 @@ class CardRevisaoComponent extends StatelessWidget {
               onSelected: (value) {
                 switch (value) {
                   case 'edit':
-                    Navigator.push(
+                    Navigator.popAndPushNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => EvidenciasPage(
-                          mode: EvidenciaMode.alterar,
-                          model: evidencia,
-                          rotaId: evidencia.rotaId,
-                        ),
-                      ),
+                      "/alterarEvidencia",
+                      arguments: evidencia,
                     );
                     break;
 

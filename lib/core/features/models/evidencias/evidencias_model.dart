@@ -2,15 +2,17 @@ import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 
 class EvidenciaModel {
   final String evidenciaRotaId;
-  final int rotaId;
+  final String rotaId;
   final String fiscal;
   final String? alimentador;
   final String? identificacao;
   final String? descricao;
+  final bool emergencial;
   final List<String> imageURL;
   final List<String> mediumImageUrl;
   final List<String> lowImageUrl;
   final String endereco;
+  final String? cidade;
   final double latitude;
   final double longitude;
   final DateTime horario;
@@ -24,10 +26,12 @@ class EvidenciaModel {
     required this.alimentador,
     required this.identificacao,
     required this.descricao,
+    required this.emergencial,
     required this.imageURL,
     required this.mediumImageUrl,
     required this.lowImageUrl,
     required this.endereco,
+    this.cidade,
     required this.horario,
     required this.latitude,
     required this.longitude,
@@ -47,9 +51,11 @@ class EvidenciaModel {
       mediumImageUrl: List<String>.from(json['mediumImageUrl']),
       lowImageUrl: List<String>.from(json['lowImageUrl']),
       endereco: json['endereco'],
+      cidade: json['cidade'],
       horario: DateTime.parse(json['horario']),
       latitude: json['latitude'],
       longitude: json['longitude'],
+      emergencial: json['emergencial']
     );
   }
 }

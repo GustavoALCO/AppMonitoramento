@@ -27,44 +27,90 @@ class BdEvidenciasService {
   }
 
   Future<void> alterarEvidencia(
-    String id,
+    StatusMode statusRecibe,
+    String idrota,
+    String idevidencia,
     String? dsc,
     String? endereco,
     String? identificacao,
     String? alimentador,
+    bool? emergencial,
   ) async {
-    await (database.update(
-      database.evidenciastable,
-    )..where((tbl) => tbl.evidenciaId.equals(id))).write(
-      EvidenciastableCompanion(
-        // só altera os valores se forem diferentes de null
-        descricao: dsc != null ? Value(dsc) : const Value.absent(),
-        endereco: endereco != null ? Value(endereco) : const Value.absent(),
-        identificacao: identificacao != null
-            ? Value(identificacao)
-            : const Value.absent(),
-        alimentador: alimentador != null
-            ? Value(alimentador)
-            : const Value.absent(),
+    if (statusRecibe == StatusMode.local) {
+      await (database.update(
+        database.evidenciastable,
+      )..where((tbl) => tbl.evidenciaId.equals(idevidencia))).write(
+        EvidenciastableCompanion(
+          descricao: dsc != null ? Value(dsc) : const Value.absent(),
+          endereco: endereco != null ? Value(endereco) : const Value.absent(),
+          identificacao: identificacao != null
+              ? Value(identificacao)
+              : const Value.absent(),
+          alimentador: alimentador != null
+              ? Value(alimentador)
+              : const Value.absent(),
+          status: const Value(StatusMode.local),
+          action: const Value(SharedMode.create),
+          emergencial: emergencial != null
+              ? Value(emergencial)
+              : const Value.absent(),
+        ),
+      );
+    } else {
+      var evidencia = await buscarEvidenciaPorIdEvi(idevidencia);
 
-        // sempre marca como local e para update
-        status: const Value(StatusMode.local),
-        action: const Value(SharedMode.update),
-      ),
-    );
+      if (evidencia != null) {
+        await (database.update(
+          database.evidenciastable,
+        )..where((tbl) => tbl.evidenciaId.equals(idevidencia))).write(
+          EvidenciastableCompanion(
+            descricao: dsc != null ? Value(dsc) : const Value.absent(),
+            endereco: endereco != null ? Value(endereco) : const Value.absent(),
+            identificacao: identificacao != null
+                ? Value(identificacao)
+                : const Value.absent(),
+            alimentador: alimentador != null
+                ? Value(alimentador)
+                : const Value.absent(),
+            status: const Value(StatusMode.local),
+            action: const Value(SharedMode.update),
+            emergencial: emergencial != null
+                ? Value(emergencial)
+                : const Value.absent(),
+          ),
+        );
+      } else {
+        await database
+            .into(database.evidenciastable)
+            .insert(
+              EvidenciastableCompanion.insert(
+                evidenciaId: idevidencia,
+                idRota: idrota,
+                descricao: Value(dsc),
+                endereco: Value(endereco),
+                identificacao: Value(identificacao),
+                alimentador: Value(alimentador),
+                status: const Value(StatusMode.local),
+                action: const Value(SharedMode.update),
+              ),
+            );
+      }
+    }
   }
 
   Future<void> criarEvidencia(
-    int idRota,
+    String idRota,
     int idFiscal,
     List<String> images,
     double lat,
     double long,
     String endereco,
+    String cidade,
     String descricao,
     String alimentador,
     String identificacao,
     TipoConstatacao tema,
+    bool emergencial,
   ) async {
     final imagesJson = jsonEncode(images);
 
@@ -81,12 +127,14 @@ class BdEvidenciasService {
               lat: Value(lat),
               long: Value(long),
               endereco: Value(endereco),
+              cidade: Value(cidade),
               descricao: Value(descricao),
               status: Value(StatusMode.local),
               action: Value(SharedMode.create),
               alimentador: Value(alimentador),
               identificacao: Value(identificacao),
               tema: Value(tema),
+              emergencial: Value(emergencial),
             ),
           );
 
@@ -96,7 +144,9 @@ class BdEvidenciasService {
     } catch (ex) {}
   }
 
-  Future<List<EvidenciastableData>> buscarEvidenciasID(int idRota) async {
+  Future<List<EvidenciastableData>> buscarEvidenciasIDRota(
+    String idRota,
+  ) async {
     final evidencias = await (database.select(
       database.evidenciastable,
     )..where((tbl) => tbl.idRota.equals(idRota))).get();
@@ -111,7 +161,7 @@ class BdEvidenciasService {
   }
 
   Future<List<EvidenciastableData>> buscarEvidenciasPagina(
-    int idRota,
+    String idRota,
     int page,
     int pageSize,
   ) async {
@@ -130,5 +180,13 @@ class BdEvidenciasService {
     await (database.delete(
       database.evidenciastable,
     )..where((tbl) => tbl.evidenciaId.equals(idEvi))).go();
+  }
+
+  Future<EvidenciastableData?> buscarEvidenciaPorIdEvi(String idEvi) async {
+    final evidencia = await (database.select(
+      database.evidenciastable,
+    )..where((tbl) => tbl.evidenciaId.equals(idEvi))).getSingleOrNull();
+
+    return evidencia;
   }
 }

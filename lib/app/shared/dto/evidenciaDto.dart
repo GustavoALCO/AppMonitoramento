@@ -3,10 +3,11 @@ import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 
 class EvidenciaCardDto {
   final String idEvi;
-  final int rotaId;
+  final String rotaId;
   final String fiscal;
   final String? descricao;
   final String endereco;
+  final String cidade;
   final String? identificacao;
   final String? alimentador;
   final List<String>? lowImage;
@@ -17,6 +18,7 @@ class EvidenciaCardDto {
   final double longitude;
   final TipoConstatacao tema;
   final StatusMode status;
+  final bool emergencial;
 
   EvidenciaCardDto({
     required this.idEvi,
@@ -24,6 +26,7 @@ class EvidenciaCardDto {
     required this.fiscal,
     required this.descricao,
     required this.endereco,
+    required this.cidade,
     required this.identificacao,
     required this.alimentador,
     this.lowImage,
@@ -34,5 +37,6 @@ class EvidenciaCardDto {
     required this.longitude,
     required this.tema,
     required this.status,
+    required this.emergencial,
   });
 }

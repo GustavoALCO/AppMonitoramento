@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:monitoramento/core/features/models/rotas/create_rotas_model.dart';
 import 'package:monitoramento/core/features/models/rotas/get_filters_rotas_model.dart';
 import 'package:monitoramento/core/features/models/rotas/manage_rota_fiscais_model.dart';
 import 'package:monitoramento/core/features/models/rotas/rotas_model.dart';
@@ -33,20 +36,48 @@ class RotasService {
     return response.statusCode.toString();
   }
 
-  // Future<String> post(CreateRotasModel data) async {
-  //   // Faz a requisição POST para o endpoint de rotas, passando os dados da nova rota no corpo da requisição
-  //   final response = await _apiClient.post(
-  //     ApiRoutes.rota,
-  //     body: data.toJson(),
-  //     headers: {
-  //       "Authorization": "Bearer ${await jwt.returnToken()}",
-  //       "Content-Type": "application/json",
-  //     },
-  //   );
+  Future<void> post(CreateRotasModel data) async {
+    // Faz a requisição POST para o endpoint de rotas, passando os dados da nova rota no corpo da requisição
+    await _apiClient.post(
+      ApiRoutes.rota,
+      body: data.toJson(),
+      headers: {
+        "Authorization": "Bearer ${await jwt.returnToken()}",
+        "Content-Type": "application/json",
+      },
+    );
 
-  //   // Retorna a resposta da API (pode ser uma mensagem de sucesso ou o ID da nova rota criada)
-  //   return response.statusCode.toString();
-  // }
+    // Retorna a resposta da API (pode ser uma mensagem de sucesso ou o ID da nova rota criada)
+    return ;
+  }
+
+  Future<Uint8List> downloadEmergencial(String id) async {
+    // Faz a requisição GET para o endpoint de rotas, passando o ID da rota a ser baixada
+    final bytes = await _apiClient.getFile(
+      '${ApiRoutes.rota}/CriarEmergencial',
+      body: {"idRota": id},
+      headers: {
+        "Authorization": "Bearer ${await jwt.returnToken()}",
+        "Content-Type": "application/json",
+      },
+    );
+    return bytes;
+  }
+
+  Future<Uint8List> downloadRelatorio(List<String> id) async {
+    // Faz a requisição GET para o endpoint de rotas, passando o ID da rota a ser baixada
+    
+    final bytes = await _apiClient.getFile(
+      '${ApiRoutes.rota}/CriarRelatorio',
+      body: {"ids": id.toList()},
+      headers: {
+        "Authorization": "Bearer ${await jwt.returnToken()}",
+        "Content-Type": "application/json",
+      },
+    );
+
+    return bytes;
+  }
 
   Future<String> adicionarFiscalRota(ManageRotaFiscaisModel data) async {
     // Faz a requisição POST para o endpoint de rotas, passando os dados para adicionar um fiscal à rota
@@ -93,7 +124,7 @@ class RotasService {
     return response.statusCode.toString();
   }
 
-  Future<RotasModel> getRotaById(int id) async {
+  Future<RotasModel> getRotaById(String id) async {
     // Faz a requisição GET para o endpoint de rotas, passando o ID da rota a ser obtida
     final data = await _apiClient.get(
       ApiRoutes.rota,
@@ -119,18 +150,4 @@ class RotasService {
     return response.statusCode.toString();
   }
 
-  // Future<String> createRota(CreateRotasModel data) async {
-  //   // Faz a requisição POST para o endpoint de rotas, passando os dados da nova rota no corpo da requisição
-  //   final response = await _apiClient.post(
-  //     ApiRoutes.rota,
-  //     body: data.toJson(),
-  //     headers: {
-  //       "Authorization": "Bearer ${await jwt.returnToken()}",
-  //       "Content-Type": "application/json",
-  //     },
-  //   );
-
-  //   // Retorna a resposta da API (pode ser uma mensagem de sucesso ou o ID da nova rota criada)
-  //   return response.statusCode.toString();
-  // }
 }

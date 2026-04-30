@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,16 +35,19 @@ class ImageService {
   }
 
   Future<String> convertImageBase64(String pickerFile) async {
-    // busca aonde a imagem está armazenada
-    File file = File(pickerFile);
+  File file = File(pickerFile);
 
-    //le e tranforma a imagem em bytes
-    final bytes = await file.readAsBytes();
+  final bytes = await file.readAsBytes();
 
-    //Converte os bytes em Base64
-    final convertBase64 = base64Encode(bytes);
+  img.Image? image = img.decodeImage(bytes);
+  if (image == null) throw Exception("Erro ao decodificar imagem");
 
-    //retorna convertido a imagem
-    return "data:image/jpeg;base64,$convertBase64";
-  }
+  image = img.bakeOrientation(image);
+
+  final processedBytes = img.encodeJpg(image, quality: 95);
+
+  final convertBase64 = base64Encode(processedBytes);
+
+  return "data:image/jpeg;base64,$convertBase64";
+}
 }

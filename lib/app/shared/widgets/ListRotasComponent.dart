@@ -28,6 +28,7 @@ class ListRotasComponent extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: CardRotaComponent(
               nomeRota: item.nome,
+              concessionaria: item.conc.name,
               alimentador: item.alimentador,
               dataInicio: item.dataInicio,
               dataFinal: item.dataFinal,
@@ -35,7 +36,7 @@ class ListRotasComponent extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => Revisaopage(id: item.id),
+                    builder: (_) => Revisaopage(id: item.id, isfiniched: item.dataFinal != null && item.dataFinal!.isNotEmpty),
                   ),
                 );
               },
