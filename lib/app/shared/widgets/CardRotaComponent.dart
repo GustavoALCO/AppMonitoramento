@@ -34,7 +34,7 @@ class CardRotaComponent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// TÍTULO + SETA
+              
               Row(
                 children: [
                   Expanded(

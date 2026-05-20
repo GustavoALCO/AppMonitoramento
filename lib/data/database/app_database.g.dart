@@ -40,16 +40,28 @@ class $EvidenciastableTable extends Evidenciastable
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _temaFiscalizacaoMeta = const VerificationMeta(
+    'temaFiscalizacao',
+  );
   @override
-  late final GeneratedColumnWithTypeConverter<TipoConstatacao?, int> tema =
-      GeneratedColumn<int>(
-        'tema',
+  late final GeneratedColumn<int> temaFiscalizacao = GeneratedColumn<int>(
+    'tema_fiscalizacao',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _subTemaFiscalizacaoMeta =
+      const VerificationMeta('subTemaFiscalizacao');
+  @override
+  late final GeneratedColumn<String> subTemaFiscalizacao =
+      GeneratedColumn<String>(
+        'sub_tema_fiscalizacao',
         aliasedName,
         true,
-        type: DriftSqlType.int,
+        type: DriftSqlType.string,
         requiredDuringInsert: false,
-        defaultValue: const Constant(0),
-      ).withConverter<TipoConstatacao?>($EvidenciastableTable.$converterteman);
+      );
   static const VerificationMeta _identificacaoMeta = const VerificationMeta(
     'identificacao',
   );
@@ -182,7 +194,8 @@ class $EvidenciastableTable extends Evidenciastable
     evidenciaId,
     idRota,
     idFiscal,
-    tema,
+    temaFiscalizacao,
+    subTemaFiscalizacao,
     identificacao,
     alimentador,
     descricao,
@@ -231,6 +244,24 @@ class $EvidenciastableTable extends Evidenciastable
       context.handle(
         _idFiscalMeta,
         idFiscal.isAcceptableOrUnknown(data['id_fiscal']!, _idFiscalMeta),
+      );
+    }
+    if (data.containsKey('tema_fiscalizacao')) {
+      context.handle(
+        _temaFiscalizacaoMeta,
+        temaFiscalizacao.isAcceptableOrUnknown(
+          data['tema_fiscalizacao']!,
+          _temaFiscalizacaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sub_tema_fiscalizacao')) {
+      context.handle(
+        _subTemaFiscalizacaoMeta,
+        subTemaFiscalizacao.isAcceptableOrUnknown(
+          data['sub_tema_fiscalizacao']!,
+          _subTemaFiscalizacaoMeta,
+        ),
       );
     }
     if (data.containsKey('identificacao')) {
@@ -323,11 +354,13 @@ class $EvidenciastableTable extends Evidenciastable
         DriftSqlType.int,
         data['${effectivePrefix}id_fiscal'],
       ),
-      tema: $EvidenciastableTable.$converterteman.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}tema'],
-        ),
+      temaFiscalizacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tema_fiscalizacao'],
+      ),
+      subTemaFiscalizacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sub_tema_fiscalizacao'],
       ),
       identificacao: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -389,10 +422,6 @@ class $EvidenciastableTable extends Evidenciastable
     return $EvidenciastableTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<TipoConstatacao, int, int> $convertertema =
-      const EnumIndexConverter<TipoConstatacao>(TipoConstatacao.values);
-  static JsonTypeConverter2<TipoConstatacao?, int?, int?> $converterteman =
-      JsonTypeConverter2.asNullable($convertertema);
   static JsonTypeConverter2<StatusMode, int, int> $converterstatus =
       const EnumIndexConverter<StatusMode>(StatusMode.values);
   static JsonTypeConverter2<SharedMode, int, int> $converteraction =
@@ -404,7 +433,8 @@ class EvidenciastableData extends DataClass
   final String evidenciaId;
   final String idRota;
   final int? idFiscal;
-  final TipoConstatacao? tema;
+  final int? temaFiscalizacao;
+  final String? subTemaFiscalizacao;
   final String? identificacao;
   final String? alimentador;
   final String? descricao;
@@ -421,7 +451,8 @@ class EvidenciastableData extends DataClass
     required this.evidenciaId,
     required this.idRota,
     this.idFiscal,
-    this.tema,
+    this.temaFiscalizacao,
+    this.subTemaFiscalizacao,
     this.identificacao,
     this.alimentador,
     this.descricao,
@@ -443,10 +474,11 @@ class EvidenciastableData extends DataClass
     if (!nullToAbsent || idFiscal != null) {
       map['id_fiscal'] = Variable<int>(idFiscal);
     }
-    if (!nullToAbsent || tema != null) {
-      map['tema'] = Variable<int>(
-        $EvidenciastableTable.$converterteman.toSql(tema),
-      );
+    if (!nullToAbsent || temaFiscalizacao != null) {
+      map['tema_fiscalizacao'] = Variable<int>(temaFiscalizacao);
+    }
+    if (!nullToAbsent || subTemaFiscalizacao != null) {
+      map['sub_tema_fiscalizacao'] = Variable<String>(subTemaFiscalizacao);
     }
     if (!nullToAbsent || identificacao != null) {
       map['identificacao'] = Variable<String>(identificacao);
@@ -496,7 +528,12 @@ class EvidenciastableData extends DataClass
       idFiscal: idFiscal == null && nullToAbsent
           ? const Value.absent()
           : Value(idFiscal),
-      tema: tema == null && nullToAbsent ? const Value.absent() : Value(tema),
+      temaFiscalizacao: temaFiscalizacao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(temaFiscalizacao),
+      subTemaFiscalizacao: subTemaFiscalizacao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subTemaFiscalizacao),
       identificacao: identificacao == null && nullToAbsent
           ? const Value.absent()
           : Value(identificacao),
@@ -535,8 +572,9 @@ class EvidenciastableData extends DataClass
       evidenciaId: serializer.fromJson<String>(json['evidenciaId']),
       idRota: serializer.fromJson<String>(json['idRota']),
       idFiscal: serializer.fromJson<int?>(json['idFiscal']),
-      tema: $EvidenciastableTable.$converterteman.fromJson(
-        serializer.fromJson<int?>(json['tema']),
+      temaFiscalizacao: serializer.fromJson<int?>(json['temaFiscalizacao']),
+      subTemaFiscalizacao: serializer.fromJson<String?>(
+        json['subTemaFiscalizacao'],
       ),
       identificacao: serializer.fromJson<String?>(json['identificacao']),
       alimentador: serializer.fromJson<String?>(json['alimentador']),
@@ -563,9 +601,8 @@ class EvidenciastableData extends DataClass
       'evidenciaId': serializer.toJson<String>(evidenciaId),
       'idRota': serializer.toJson<String>(idRota),
       'idFiscal': serializer.toJson<int?>(idFiscal),
-      'tema': serializer.toJson<int?>(
-        $EvidenciastableTable.$converterteman.toJson(tema),
-      ),
+      'temaFiscalizacao': serializer.toJson<int?>(temaFiscalizacao),
+      'subTemaFiscalizacao': serializer.toJson<String?>(subTemaFiscalizacao),
       'identificacao': serializer.toJson<String?>(identificacao),
       'alimentador': serializer.toJson<String?>(alimentador),
       'descricao': serializer.toJson<String?>(descricao),
@@ -589,7 +626,8 @@ class EvidenciastableData extends DataClass
     String? evidenciaId,
     String? idRota,
     Value<int?> idFiscal = const Value.absent(),
-    Value<TipoConstatacao?> tema = const Value.absent(),
+    Value<int?> temaFiscalizacao = const Value.absent(),
+    Value<String?> subTemaFiscalizacao = const Value.absent(),
     Value<String?> identificacao = const Value.absent(),
     Value<String?> alimentador = const Value.absent(),
     Value<String?> descricao = const Value.absent(),
@@ -606,7 +644,12 @@ class EvidenciastableData extends DataClass
     evidenciaId: evidenciaId ?? this.evidenciaId,
     idRota: idRota ?? this.idRota,
     idFiscal: idFiscal.present ? idFiscal.value : this.idFiscal,
-    tema: tema.present ? tema.value : this.tema,
+    temaFiscalizacao: temaFiscalizacao.present
+        ? temaFiscalizacao.value
+        : this.temaFiscalizacao,
+    subTemaFiscalizacao: subTemaFiscalizacao.present
+        ? subTemaFiscalizacao.value
+        : this.subTemaFiscalizacao,
     identificacao: identificacao.present
         ? identificacao.value
         : this.identificacao,
@@ -629,7 +672,12 @@ class EvidenciastableData extends DataClass
           : this.evidenciaId,
       idRota: data.idRota.present ? data.idRota.value : this.idRota,
       idFiscal: data.idFiscal.present ? data.idFiscal.value : this.idFiscal,
-      tema: data.tema.present ? data.tema.value : this.tema,
+      temaFiscalizacao: data.temaFiscalizacao.present
+          ? data.temaFiscalizacao.value
+          : this.temaFiscalizacao,
+      subTemaFiscalizacao: data.subTemaFiscalizacao.present
+          ? data.subTemaFiscalizacao.value
+          : this.subTemaFiscalizacao,
       identificacao: data.identificacao.present
           ? data.identificacao.value
           : this.identificacao,
@@ -657,7 +705,8 @@ class EvidenciastableData extends DataClass
           ..write('evidenciaId: $evidenciaId, ')
           ..write('idRota: $idRota, ')
           ..write('idFiscal: $idFiscal, ')
-          ..write('tema: $tema, ')
+          ..write('temaFiscalizacao: $temaFiscalizacao, ')
+          ..write('subTemaFiscalizacao: $subTemaFiscalizacao, ')
           ..write('identificacao: $identificacao, ')
           ..write('alimentador: $alimentador, ')
           ..write('descricao: $descricao, ')
@@ -679,7 +728,8 @@ class EvidenciastableData extends DataClass
     evidenciaId,
     idRota,
     idFiscal,
-    tema,
+    temaFiscalizacao,
+    subTemaFiscalizacao,
     identificacao,
     alimentador,
     descricao,
@@ -700,7 +750,8 @@ class EvidenciastableData extends DataClass
           other.evidenciaId == this.evidenciaId &&
           other.idRota == this.idRota &&
           other.idFiscal == this.idFiscal &&
-          other.tema == this.tema &&
+          other.temaFiscalizacao == this.temaFiscalizacao &&
+          other.subTemaFiscalizacao == this.subTemaFiscalizacao &&
           other.identificacao == this.identificacao &&
           other.alimentador == this.alimentador &&
           other.descricao == this.descricao &&
@@ -719,7 +770,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
   final Value<String> evidenciaId;
   final Value<String> idRota;
   final Value<int?> idFiscal;
-  final Value<TipoConstatacao?> tema;
+  final Value<int?> temaFiscalizacao;
+  final Value<String?> subTemaFiscalizacao;
   final Value<String?> identificacao;
   final Value<String?> alimentador;
   final Value<String?> descricao;
@@ -737,7 +789,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     this.evidenciaId = const Value.absent(),
     this.idRota = const Value.absent(),
     this.idFiscal = const Value.absent(),
-    this.tema = const Value.absent(),
+    this.temaFiscalizacao = const Value.absent(),
+    this.subTemaFiscalizacao = const Value.absent(),
     this.identificacao = const Value.absent(),
     this.alimentador = const Value.absent(),
     this.descricao = const Value.absent(),
@@ -756,7 +809,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     required String evidenciaId,
     required String idRota,
     this.idFiscal = const Value.absent(),
-    this.tema = const Value.absent(),
+    this.temaFiscalizacao = const Value.absent(),
+    this.subTemaFiscalizacao = const Value.absent(),
     this.identificacao = const Value.absent(),
     this.alimentador = const Value.absent(),
     this.descricao = const Value.absent(),
@@ -776,7 +830,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Expression<String>? evidenciaId,
     Expression<String>? idRota,
     Expression<int>? idFiscal,
-    Expression<int>? tema,
+    Expression<int>? temaFiscalizacao,
+    Expression<String>? subTemaFiscalizacao,
     Expression<String>? identificacao,
     Expression<String>? alimentador,
     Expression<String>? descricao,
@@ -795,7 +850,9 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       if (evidenciaId != null) 'evidencia_id': evidenciaId,
       if (idRota != null) 'id_rota': idRota,
       if (idFiscal != null) 'id_fiscal': idFiscal,
-      if (tema != null) 'tema': tema,
+      if (temaFiscalizacao != null) 'tema_fiscalizacao': temaFiscalizacao,
+      if (subTemaFiscalizacao != null)
+        'sub_tema_fiscalizacao': subTemaFiscalizacao,
       if (identificacao != null) 'identificacao': identificacao,
       if (alimentador != null) 'alimentador': alimentador,
       if (descricao != null) 'descricao': descricao,
@@ -816,7 +873,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     Value<String>? evidenciaId,
     Value<String>? idRota,
     Value<int?>? idFiscal,
-    Value<TipoConstatacao?>? tema,
+    Value<int?>? temaFiscalizacao,
+    Value<String?>? subTemaFiscalizacao,
     Value<String?>? identificacao,
     Value<String?>? alimentador,
     Value<String?>? descricao,
@@ -835,7 +893,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       evidenciaId: evidenciaId ?? this.evidenciaId,
       idRota: idRota ?? this.idRota,
       idFiscal: idFiscal ?? this.idFiscal,
-      tema: tema ?? this.tema,
+      temaFiscalizacao: temaFiscalizacao ?? this.temaFiscalizacao,
+      subTemaFiscalizacao: subTemaFiscalizacao ?? this.subTemaFiscalizacao,
       identificacao: identificacao ?? this.identificacao,
       alimentador: alimentador ?? this.alimentador,
       descricao: descricao ?? this.descricao,
@@ -864,9 +923,12 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     if (idFiscal.present) {
       map['id_fiscal'] = Variable<int>(idFiscal.value);
     }
-    if (tema.present) {
-      map['tema'] = Variable<int>(
-        $EvidenciastableTable.$converterteman.toSql(tema.value),
+    if (temaFiscalizacao.present) {
+      map['tema_fiscalizacao'] = Variable<int>(temaFiscalizacao.value);
+    }
+    if (subTemaFiscalizacao.present) {
+      map['sub_tema_fiscalizacao'] = Variable<String>(
+        subTemaFiscalizacao.value,
       );
     }
     if (identificacao.present) {
@@ -921,7 +983,8 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
           ..write('evidenciaId: $evidenciaId, ')
           ..write('idRota: $idRota, ')
           ..write('idFiscal: $idFiscal, ')
-          ..write('tema: $tema, ')
+          ..write('temaFiscalizacao: $temaFiscalizacao, ')
+          ..write('subTemaFiscalizacao: $subTemaFiscalizacao, ')
           ..write('identificacao: $identificacao, ')
           ..write('alimentador: $alimentador, ')
           ..write('descricao: $descricao, ')
@@ -1379,7 +1442,8 @@ typedef $$EvidenciastableTableCreateCompanionBuilder =
       required String evidenciaId,
       required String idRota,
       Value<int?> idFiscal,
-      Value<TipoConstatacao?> tema,
+      Value<int?> temaFiscalizacao,
+      Value<String?> subTemaFiscalizacao,
       Value<String?> identificacao,
       Value<String?> alimentador,
       Value<String?> descricao,
@@ -1399,7 +1463,8 @@ typedef $$EvidenciastableTableUpdateCompanionBuilder =
       Value<String> evidenciaId,
       Value<String> idRota,
       Value<int?> idFiscal,
-      Value<TipoConstatacao?> tema,
+      Value<int?> temaFiscalizacao,
+      Value<String?> subTemaFiscalizacao,
       Value<String?> identificacao,
       Value<String?> alimentador,
       Value<String?> descricao,
@@ -1439,10 +1504,14 @@ class $$EvidenciastableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<TipoConstatacao?, TipoConstatacao, int>
-  get tema => $composableBuilder(
-    column: $table.tema,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
+  ColumnFilters<int> get temaFiscalizacao => $composableBuilder(
+    column: $table.temaFiscalizacao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subTemaFiscalizacao => $composableBuilder(
+    column: $table.subTemaFiscalizacao,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get identificacao => $composableBuilder(
@@ -1532,8 +1601,13 @@ class $$EvidenciastableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get tema => $composableBuilder(
-    column: $table.tema,
+  ColumnOrderings<int> get temaFiscalizacao => $composableBuilder(
+    column: $table.temaFiscalizacao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subTemaFiscalizacao => $composableBuilder(
+    column: $table.subTemaFiscalizacao,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1618,8 +1692,15 @@ class $$EvidenciastableTableAnnotationComposer
   GeneratedColumn<int> get idFiscal =>
       $composableBuilder(column: $table.idFiscal, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<TipoConstatacao?, int> get tema =>
-      $composableBuilder(column: $table.tema, builder: (column) => column);
+  GeneratedColumn<int> get temaFiscalizacao => $composableBuilder(
+    column: $table.temaFiscalizacao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get subTemaFiscalizacao => $composableBuilder(
+    column: $table.subTemaFiscalizacao,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get identificacao => $composableBuilder(
     column: $table.identificacao,
@@ -1704,7 +1785,8 @@ class $$EvidenciastableTableTableManager
                 Value<String> evidenciaId = const Value.absent(),
                 Value<String> idRota = const Value.absent(),
                 Value<int?> idFiscal = const Value.absent(),
-                Value<TipoConstatacao?> tema = const Value.absent(),
+                Value<int?> temaFiscalizacao = const Value.absent(),
+                Value<String?> subTemaFiscalizacao = const Value.absent(),
                 Value<String?> identificacao = const Value.absent(),
                 Value<String?> alimentador = const Value.absent(),
                 Value<String?> descricao = const Value.absent(),
@@ -1722,7 +1804,8 @@ class $$EvidenciastableTableTableManager
                 evidenciaId: evidenciaId,
                 idRota: idRota,
                 idFiscal: idFiscal,
-                tema: tema,
+                temaFiscalizacao: temaFiscalizacao,
+                subTemaFiscalizacao: subTemaFiscalizacao,
                 identificacao: identificacao,
                 alimentador: alimentador,
                 descricao: descricao,
@@ -1742,7 +1825,8 @@ class $$EvidenciastableTableTableManager
                 required String evidenciaId,
                 required String idRota,
                 Value<int?> idFiscal = const Value.absent(),
-                Value<TipoConstatacao?> tema = const Value.absent(),
+                Value<int?> temaFiscalizacao = const Value.absent(),
+                Value<String?> subTemaFiscalizacao = const Value.absent(),
                 Value<String?> identificacao = const Value.absent(),
                 Value<String?> alimentador = const Value.absent(),
                 Value<String?> descricao = const Value.absent(),
@@ -1760,7 +1844,8 @@ class $$EvidenciastableTableTableManager
                 evidenciaId: evidenciaId,
                 idRota: idRota,
                 idFiscal: idFiscal,
-                tema: tema,
+                temaFiscalizacao: temaFiscalizacao,
+                subTemaFiscalizacao: subTemaFiscalizacao,
                 identificacao: identificacao,
                 alimentador: alimentador,
                 descricao: descricao,

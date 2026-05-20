@@ -73,7 +73,6 @@ class _InputshowuserscomponentsState
                             ),
                           ),
 
-                          // 🔥 CORES CONTROLADAS
                           activeColor: AppColors.secondary,
                           checkColor: Colors.white,
 

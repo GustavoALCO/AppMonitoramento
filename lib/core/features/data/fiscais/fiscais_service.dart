@@ -1,3 +1,4 @@
+import 'package:monitoramento/core/features/models/fiscais/create_fiscal_model.dart';
 import 'package:monitoramento/core/features/models/fiscais/fiscais_model.dart';
 import 'package:monitoramento/core/features/models/fiscais/login_fiscal_model.dart';
 import 'package:monitoramento/core/features/models/fiscais/update_fiscais_model.dart';
@@ -23,10 +24,25 @@ class FiscaisService {
 
   final List list = response as List; // 👈 FORÇA AQUI
 
+
   return list
       .map((e) => FiscaisModel.fromJson(e))
       .toList();
 }
+
+  Future<bool> createFiscal(CreateFiscalModel data) async {
+    // Faz a requisição PUT para o endpoint de fiscais, passando o ID do fiscal a ser atualizado e os dados atualizados no corpo da requisição
+    final response = await _apiClient.post(
+      ApiRoutes.fiscais,
+      body: data.toJson(),
+      headers: {
+      "Authorization": "Bearer ${await jwt.returnToken()}",
+      "Content-Type": "application/json",
+    },
+    );
+    // Retorna a resposta da API 
+    return response['statusCode'] == 200 || response['statusCode'] == 201;
+  }
 
   // Método para atualizar um fiscal
   Future<String> updateFiscal(UpdateFiscaisModel data) async {

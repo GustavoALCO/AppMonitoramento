@@ -1,16 +1,23 @@
 // ignore_for_file: unnecessary_underscores
 
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumEvidenciaMode.dart';
-import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/enums/enumTemaFiscalicacao.dart';
 
-import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
+import 'package:monitoramento/app/shared/mappers/subTemaMapper.dart';
+import 'package:monitoramento/app/shared/mappers/temaMapper.dart';
+import 'package:monitoramento/app/shared/mappers/temaSubtemaMapper.dart';
+
+import 'package:monitoramento/app/shared/utils/AppColors.dart';
+
+import 'package:monitoramento/app/shared/widgets/AppBarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ButtonDeploy.dart';
 import 'package:monitoramento/app/shared/widgets/InputComponent.dart';
 import 'package:monitoramento/app/shared/widgets/SelectBoxComponent.dart';
@@ -20,6 +27,9 @@ import 'package:monitoramento/core/services/geo_service.dart';
 import 'package:monitoramento/core/services/image_service.dart';
 import 'package:monitoramento/core/services/internet_service.dart';
 import 'package:monitoramento/core/services/token_service.dart';
+
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 class EvidenciasPage extends StatefulWidget {
   final EvidenciaMode mode;
@@ -52,12 +62,14 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
   Position? geo;
 
-  late TipoConstatacao tipoConstatacao;
+  late TemaFiscalizacao temaFiscalizacao;
+
+  List<int> subTemasSelecionados = [];
+
   bool emergencial = false;
 
   bool isLoading = false;
 
-  // LISTA DE IMAGENS
   List<String> pathImages = [];
 
   @override
@@ -67,7 +79,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   }
 
   Future<void> _init() async {
-    tipoConstatacao = TipoConstatacao.values.first;
+    temaFiscalizacao = TemaFiscalizacao.Outros;
 
     _tokenService = TokenService();
     _imageService = ImageService();
@@ -85,13 +97,17 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       identificadorController.text = model.identificacao ?? "";
       descricaoController.text = model.descricao ?? "";
 
-      tipoConstatacao = model.tema;
+      temaFiscalizacao = model.tema;
+
+      subTemasSelecionados =
+      [model.subTema.first.index];
 
       if (model.status.index == StatusMode.local.index) {
-        pathImages = List.from(model.originalImage as Iterable<dynamic>);
+        pathImages = List.from(
+          model.originalImage as Iterable<dynamic>,
+        );
       } else {
-        //Se
-        pathImages = model.mediumImage!;
+        pathImages = model.originalImage;
       }
     }
   }
@@ -103,39 +119,44 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     alimentadorController.dispose();
     identificadorController.dispose();
     descricaoController.dispose();
+    
     super.dispose();
   }
 
-  // TIRAR FOTO
   Future<void> _tirarFoto() async {
     if (pathImages.length >= 3) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Máximo de 3 imagens")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Máximo de 3 imagens"),
+        ),
+      );
       return;
     }
 
-    final XFile? file = await _imageService.selectCamera();
+    final XFile? file =
+        await _imageService.selectCamera();
 
     if (file == null) return;
 
     try {
       await _pegarEndereco();
 
-      final path = await _imageService.salvarImagemLocal(file);
+      final path =
+          await _imageService.salvarImagemLocal(file);
 
       setState(() {
         pathImages.add(path);
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Erro ao salvar imagem")));
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Erro ao salvar imagem"),
+        ),
+      );
     }
   }
 
-  // PEGA GEOLOCALIZAÇÃO
   Future<void> _pegarEndereco() async {
     geo = await _geoService.takeGeolocation();
 
@@ -145,16 +166,22 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
         geo!.longitude,
       );
 
-      enderecoController.text = adress["endereco"] ?? "";
-      cidadeController.text = adress["cidade"] ?? "Não encontrada";
+      enderecoController.text =
+          adress["endereco"] ?? "";
+
+      cidadeController.text =
+          adress["cidade"] ?? "Não encontrada";
     }
   }
 
-  // SALVAR EVIDENCIA
   Future<void> _salvarEvidencia() async {
     if (pathImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("É Necessario Adicionar 1 Fotos")),
+        const SnackBar(
+          content: Text(
+            "É Necessario Adicionar 1 Fotos",
+          ),
+        ),
       );
       return;
     }
@@ -162,7 +189,8 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     setState(() => isLoading = true);
 
     try {
-      if (widget.mode.index == EvidenciaMode.criar.index) {
+      if (widget.mode.index ==
+          EvidenciaMode.criar.index) {
         await _bdEvidenciasService.criarEvidencia(
           widget.rotaId,
           await _tokenService.getIdPayload() ?? 0,
@@ -174,7 +202,8 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
           descricaoController.text,
           alimentadorController.text,
           identificadorController.text,
-          tipoConstatacao,
+          temaFiscalizacao,
+          subTemasSelecionados,
           emergencial,
         );
       } else {
@@ -192,23 +221,34 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
       if (!mounted) return;
 
-      Navigator.popAndPushNamed(context, "/revisao", arguments: widget.rotaId);
-    } catch (e) {
-      ScaffoldMessenger.of(
+      Navigator.popAndPushNamed(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Erro ao salvar evidência")));
+        "/revisao",
+        arguments: widget.rotaId,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Erro ao salvar evidência",
+          ),
+        ),
+      );
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-  // LAYOUT DAS IMAGENS
   Widget _buildImages() {
     if (pathImages.isEmpty) {
       return Container(
         color: Colors.grey.shade200,
         child: const Center(
-          child: Icon(Icons.camera_alt, size: 80, color: Colors.grey),
+          child: Icon(
+            Icons.camera_alt,
+            size: 80,
+            color: Colors.grey,
+          ),
         ),
       );
     }
@@ -219,17 +259,29 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
     return Row(
       children: [
-        Expanded(flex: 2, child: _imageBox(pathImages[0])),
+        Expanded(
+          flex: 2,
+          child: _imageBox(pathImages[0]),
+        ),
+
         const SizedBox(width: 6),
+
         Expanded(
           flex: 1,
           child: Column(
             children: [
               if (pathImages.length >= 2)
-                Expanded(child: _imageBox(pathImages[1])),
-              if (pathImages.length >= 3) const SizedBox(height: 6),
+                Expanded(
+                  child: _imageBox(pathImages[1]),
+                ),
+
               if (pathImages.length >= 3)
-                Expanded(child: _imageBox(pathImages[2])),
+                const SizedBox(height: 6),
+
+              if (pathImages.length >= 3)
+                Expanded(
+                  child: _imageBox(pathImages[2]),
+                ),
             ],
           ),
         ),
@@ -238,7 +290,8 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
   }
 
   Widget _imageBox(String path) {
-    final bool isNetwork = path.startsWith("http");
+    final bool isNetwork =
+        path.startsWith("http");
 
     return GestureDetector(
       onTap: () => _openImageDialog(path),
@@ -250,8 +303,6 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                errorBuilder: (_, __, ___) =>
-                    const Center(child: Icon(Icons.image_not_supported)),
               )
             : Image.file(
                 File(path),
@@ -263,9 +314,9 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     );
   }
 
-  // DIALOG COM ZOOM
   void _openImageDialog(String path) {
-    final bool isNetwork = path.startsWith("http");
+    final bool isNetwork =
+        path.startsWith("http");
 
     showDialog(
       context: context,
@@ -284,12 +335,18 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
                       : Image.file(File(path)),
                 ),
               ),
+
               Positioned(
                 top: 30,
                 right: 30,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                  onPressed: () =>
+                      Navigator.pop(context),
                 ),
               ),
             ],
@@ -301,107 +358,221 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final subTemasDisponiveis =
+        TemaSubtemaMapper
+            .obterSubTemas(temaFiscalizacao);
+
     return Scaffold(
-      appBar: AppbarComponent("Criar Nova Evidência", false),
+      appBar: AppbarComponent(
+        "Criar Nova Evidência",
+        false,
+      ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           children: [
             Buttondeploy(
               text: "Tirar Foto",
               select: true,
               iconEnabled: true,
-              onPressed: widget.mode.index == EvidenciaMode.alterar.index
-                  ? null
-                  : _tirarFoto,
+              onPressed:
+                  widget.mode.index ==
+                          EvidenciaMode.alterar.index
+                      ? null
+                      : _tirarFoto,
             ),
 
             const SizedBox(height: 16),
 
             Container(
               height: 300,
+
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius:
+                    BorderRadius.circular(10),
+
                 boxShadow: const [
-                  BoxShadow(blurRadius: 4, offset: Offset(0, 1)),
+                  BoxShadow(
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
                 ],
               ),
+
               clipBehavior: Clip.hardEdge,
+
               child: _buildImages(),
             ),
 
             const SizedBox(height: 16),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment:
+                  MainAxisAlignment.start,
+
               children: [
                 Checkbox(
                   value: emergencial,
+
                   onChanged: (bool? value) {
                     setState(() {
                       emergencial = value!;
                     });
                   },
                 ),
+
                 const Text(
                   "Evidência Emergencial",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
 
             const SizedBox(height: 16),
 
-            Selectboxcomponent<TipoConstatacao>(
-              label: "Tipo de Constatação",
-              value: tipoConstatacao,
-              values: TipoConstatacao.values,
-              labelBuilder: (value) => value.name,
+            Selectboxcomponent<TemaFiscalizacao>(
+              label: "Tema de Constatação",
+
+              value: temaFiscalizacao,
+
+              values: TemaFiscalizacao.values,
+
+              labelBuilder: (value) =>
+                  Temamapper.obterTema(
+                    value.index,
+                  )?.titulo ??
+                  "",
+
               onChanged: (value) {
                 setState(() {
-                  tipoConstatacao = value!;
+                  temaFiscalizacao = value!;
+                  subTemasSelecionados = [];
                 });
               },
             ),
 
             const SizedBox(height: 16),
 
-            InputComponent(label: "Endereço", controller: enderecoController),
+            MultiSelectDialogField<int>(
+
+              initialValue:
+                  subTemasSelecionados,
+
+              items: subTemasDisponiveis
+                  .map(
+                    (e) => MultiSelectItem<int>(
+                      e.index,
+
+                      Subtemamapper.obterTema(
+                            e.index,
+                          )?.titulo ??
+                          "",
+                    ),
+                  )
+                  .toList(),
+
+              title: const Text(
+                "Selecionar Subtemas",
+              ),
+
+              buttonText: const Text(
+                "Escolher Subtemas",
+
+                style: TextStyle(
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+              ),
+
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(8),
+
+                border: Border.all(
+                  color: AppColors.secondary,
+                  width: 1,
+                ),
+              ),
+
+              dialogHeight: 500,
+
+              selectedColor:
+                  AppColors.secondary,
+
+              checkColor:
+                  Colors.white,
+
+              onConfirm: (values) {
+                setState(() {
+                  subTemasSelecionados = values;
+                });
+              },
+            ),
 
             const SizedBox(height: 16),
 
-            InputComponent(label: "Cidade", controller: cidadeController),
+            InputComponent(
+              label: "Endereço",
+              controller: enderecoController,
+            ),
+
+            const SizedBox(height: 16),
+
+            InputComponent(
+              label: "Cidade",
+              controller: cidadeController,
+            ),
 
             const SizedBox(height: 16),
 
             InputComponent(
               label: "Alimentador",
-              controller: alimentadorController,
+              controller:
+                  alimentadorController,
             ),
 
             const SizedBox(height: 16),
 
             InputComponent(
               label: "Identificador",
-              controller: identificadorController,
+              controller:
+                  identificadorController,
             ),
 
             const SizedBox(height: 16),
 
             InputComponent(
               label: "Observações",
-              controller: descricaoController,
+              controller:
+                  descricaoController,
             ),
 
             const SizedBox(height: 24),
 
             Buttondeploy(
               iconEnabled: false,
-              text: widget.mode.index == EvidenciaMode.alterar.index
-                  ? "Alterar Evidências"
-                  : "Enviar Evidências",
+
+              text:
+                  widget.mode.index ==
+                          EvidenciaMode
+                              .alterar
+                              .index
+                      ? "Alterar Evidências"
+                      : "Enviar Evidências",
+
               select: true,
-              onPressed: isLoading ? null : _salvarEvidencia,
+
+              onPressed:
+                  isLoading
+                      ? null
+                      : _salvarEvidencia,
             ),
 
             const SizedBox(height: 16),
@@ -410,7 +581,12 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
               iconEnabled: false,
               text: "Cancelar",
               select: false,
-              onPressed: () => Navigator.pop(context, false),
+
+              onPressed: () =>
+                  Navigator.pop(
+                    context,
+                    false,
+                  ),
             ),
           ],
         ),

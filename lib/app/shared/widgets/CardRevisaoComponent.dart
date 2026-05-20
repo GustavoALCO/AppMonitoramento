@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/mappers/subTemaMapper.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 import 'package:monitoramento/core/services/geo_service.dart';
 
@@ -30,7 +31,7 @@ class CardRevisaoComponent extends StatelessWidget {
       imagens = List.from(evidencia.originalImage as Iterable<dynamic>);
     } else {
       //Se
-      imagens = evidencia.mediumImage!;
+      imagens = evidencia.originalImage;
     }
 
     return Container(
@@ -67,6 +68,23 @@ class CardRevisaoComponent extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
+
+          Column(
+            children: [
+              for (var sub in evidencia.subTema)
+                Center(
+                  child: Text(
+                    Subtemamapper.obterTema(sub.index)?.titulo ?? '',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
 
           /// ENDEREÇO
           if (evidencia.endereco.isNotEmpty)

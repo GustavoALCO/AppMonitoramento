@@ -3,6 +3,7 @@ class CreateEvidenciasModel {
   final String rotaId;
   final int fiscalId;
   final int tema;
+  final List<int> subtema;
   final bool emergencial;
   final String? identificacao;
   final String? alimentador;
@@ -19,6 +20,7 @@ class CreateEvidenciasModel {
     required this.rotaId,
     required this.fiscalId,
     required this.tema,
+    required this.subtema,
     required this.emergencial,
     this.identificacao,
     this.alimentador,
@@ -37,6 +39,7 @@ class CreateEvidenciasModel {
       'rotaID': rotaId,
       'fiscalId': fiscalId,
       'temaFiscalizacao': tema,
+      'subtemaFiscalizacao': subtema,
       'emergencial': emergencial,
       if (identificacao != null) 'identificacao': identificacao,
       if (alimentador != null) 'alimentador': alimentador,
@@ -62,6 +65,9 @@ class CreateEvidenciasModel {
       rotaId: json['rotaID'],
       fiscalId: json['fiscalId'],
       tema: json['temaFiscalizacao'],
+      subtema: (json['subTemaFiscalizacao'] as List)
+          .map((e) => int.parse(e.toString()))
+          .toList(),
       identificacao: json['identificacao'],
       alimentador: json['alimentador'],
       descricao: json['descricao'],

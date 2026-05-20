@@ -1,4 +1,5 @@
 import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
+import 'package:monitoramento/app/shared/enums/enumTemaFiscalicacao.dart';
 
 class EvidenciaModel {
   final String evidenciaRotaId;
@@ -9,26 +10,26 @@ class EvidenciaModel {
   final String? descricao;
   final bool emergencial;
   final List<String> imageURL;
-  final List<String> mediumImageUrl;
   final List<String> lowImageUrl;
   final String endereco;
   final String? cidade;
   final double latitude;
   final double longitude;
   final DateTime horario;
-  final TipoConstatacao temaFiscalizacao;
+  final List<SubTemaFiscalizacao> subTemaFiscalizacao;
+  final TemaFiscalizacao temaFiscalizacao;
 
   EvidenciaModel({
     required this.evidenciaRotaId,
     required this.rotaId,
     required this.fiscal,
     required this.temaFiscalizacao,
+    required this.subTemaFiscalizacao,
     required this.alimentador,
     required this.identificacao,
     required this.descricao,
     required this.emergencial,
     required this.imageURL,
-    required this.mediumImageUrl,
     required this.lowImageUrl,
     required this.endereco,
     this.cidade,
@@ -43,12 +44,14 @@ class EvidenciaModel {
       evidenciaRotaId: json['evidenciaRotaId'],
       rotaId: json['rotaId'],
       fiscal: json['nomeFiscal'],
-      temaFiscalizacao: TipoConstatacao.values[json['temaFiscalizacao']],
+      temaFiscalizacao: TemaFiscalizacao.values[json['temaFiscalizacao']],
+      subTemaFiscalizacao: (json['subTemaFiscalizacao'] as List)
+          .map((e) => SubTemaFiscalizacao.values[e as int])
+          .toList(),
       alimentador: json['alimentador'],
       identificacao: json['identificacao'],
       descricao: json['descricao'],
       imageURL: List<String>.from(json['imageURL']),
-      mediumImageUrl: List<String>.from(json['mediumImageUrl']),
       lowImageUrl: List<String>.from(json['lowImageUrl']),
       endereco: json['endereco'],
       cidade: json['cidade'],

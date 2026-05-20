@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/enums/enumSharedMode.dart';
 
@@ -10,8 +9,11 @@ class Evidenciastable extends Table {
 
   IntColumn get idFiscal => integer().nullable()();
 
-  IntColumn get tema =>
-      intEnum<TipoConstatacao>().nullable().withDefault(const Constant(0))();
+  IntColumn get temaFiscalizacao =>
+      integer().nullable()();
+
+  TextColumn get subTemaFiscalizacao =>
+    text().nullable()();
 
   TextColumn get identificacao => text().nullable()();
 

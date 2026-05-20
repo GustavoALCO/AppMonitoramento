@@ -3,10 +3,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
+import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 import 'package:monitoramento/app/shared/enums/enumSharedMode.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/enums/enumTemaFiscalicacao.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
-import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
+import 'package:monitoramento/app/shared/widgets/AppBarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ListRevisaoComponent.dart';
 import 'package:monitoramento/core/features/data/evidencias/evidencias_service.dart';
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
@@ -86,12 +88,12 @@ class _RevisaopageState extends State<Revisaopage> {
       identificacao: evi.identificacao,
       alimentador: evi.alimentador,
       lowImage: evi.lowImageUrl,
-      mediumImage: evi.mediumImageUrl,
       originalImage: evi.lowImageUrl,
       horario: evi.horario.toString(),
       latitude: evi.latitude,
       longitude: evi.longitude,
       tema: evi.temaFiscalizacao,
+      subTema: evi.subTemaFiscalizacao,
       status: StatusMode.enviado,
       emergencial: evi.emergencial,
     );
@@ -194,6 +196,7 @@ class _RevisaopageState extends State<Revisaopage> {
       }
       listaTemp.add(
         EvidenciaCardDto(
+
           idEvi: evi.evidenciaId,
           rotaId: evi.idRota,
           fiscal: fiscal,
@@ -206,7 +209,13 @@ class _RevisaopageState extends State<Revisaopage> {
           horario: "${evi.horario}Z",
           latitude: evi.lat ?? 0.0,
           longitude: evi.long ?? 0.0,
-          tema: evi.tema!,
+          tema: TemaFiscalizacao.values[evi.temaFiscalizacao ?? 0],
+          //TEMPORARIO
+          subTema: evi.subTemaFiscalizacao != null
+          ? (jsonDecode(evi.subTemaFiscalizacao!) as List)
+              .map((e) => SubTemaFiscalizacao.values[e as int])
+              .toList()
+          : [],
           status: StatusMode.local,
           emergencial: evi.emergencial,
         ),
@@ -292,13 +301,13 @@ class _RevisaopageState extends State<Revisaopage> {
           },
         ),
       ),
-      floatingActionButton: widget.isfiniched == false
-          ? FloatingActionButton(
-              onPressed: _abrirCriarEvidencia,
-              backgroundColor: AppColors.cards,
-              child: const Icon(Icons.add, color: AppColors.secondary),
-            )
-          : null,
+      floatingActionButton: widget.isfiniched == true
+    ? null
+    : FloatingActionButton(
+        onPressed: _abrirCriarEvidencia,
+        backgroundColor: AppColors.cards,
+        child: const Icon(Icons.add, color: AppColors.secondary),
+      ),
     );
   }
 }

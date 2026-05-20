@@ -2,6 +2,7 @@ class UpdateEvidenciasModel {
   final String evidenciaID;
   final String? descricao;
   final int? tema;
+  final int? subtema;
   final String? alimentador;
   final String? endereco;
   final String? identificacao;
@@ -11,6 +12,7 @@ class UpdateEvidenciasModel {
     required this.evidenciaID,
     this.descricao,
     this.tema,
+    this.subtema,
     this.alimentador,
     this.endereco,
     this.identificacao,
@@ -22,6 +24,7 @@ class UpdateEvidenciasModel {
       'evidenciaId': evidenciaID,
       if (descricao != null) 'descricao': "$descricao",
       if (tema != null) 'tema': tema,
+      if (subtema != null) 'subtema': subtema,
       if (alimentador != null) 'alimentador': "$alimentador",
       if (endereco != null) 'endereco': "$endereco",
       if (identificacao != null) 'identificacao': "$identificacao",

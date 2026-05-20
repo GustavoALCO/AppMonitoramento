@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -10,6 +11,7 @@ import 'package:monitoramento/core/features/models/evidencias/update_evidencias_
 import 'package:monitoramento/core/network/api_client.dart';
 import 'package:monitoramento/core/services/bd_evidencias_service.dart';
 import 'package:monitoramento/core/services/image_service.dart';
+import 'package:monitoramento/core/services/internet_service.dart';
 
 class SyncService {
   static final SyncService instance = SyncService._internal();
@@ -22,35 +24,36 @@ class SyncService {
   final BdEvidenciasService _bd = BdEvidenciasService();
   final EvidenciasService _service = EvidenciasService(ApiClient());
   final ImageService _imageService = ImageService();
+  final InternetService _internetService = InternetService();
+
 
   bool _isSyncing = false;
   bool _started = false;
 
-  /// inicia o serviço
   void start() {
-    if (_started) return;
+  if (_started) return;
 
-    _started = true;
+  _started = true;
 
-    sincronizar();
+  sincronizar();
 
-    _subscription = _connectivity.onConnectivityChanged.listen((result) async {
-      if (result.contains(ConnectivityResult.none)) {
-        return;
-      }
+  _subscription = _connectivity.onConnectivityChanged.listen(
+    (List<ConnectivityResult> results) async {
+
 
       if (await _temInternet()) {
-        sincronizar();
+
+
+        await sincronizar();
       }
-    });
-  }
+    },
+  );
+}
 
   Future<bool> _temInternet() async {
     try {
-      final List<ConnectivityResult> results = await Connectivity()
-          .checkConnectivity();
-      // Retorna true se a lista de conexões contém Wi-Fi
-      return results.contains(ConnectivityResult.wifi);
+      final results = await _internetService.temInternet();
+      return results == true;
     } catch (_) {
       return false;
     }
@@ -59,14 +62,10 @@ class SyncService {
   /// sincronização principal
   Future<void> sincronizar() async {
 
-    
     if (_isSyncing) {
       return;
     }
 
-    if (!await _temInternet()) {
-      return;
-    }
 
     _isSyncing = true;
 
@@ -100,13 +99,15 @@ class SyncService {
         }
       }
       // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) { }
 
     _isSyncing = false;
   }
 
   /// envia evidência nova
   Future<void> _enviarCreate(dynamic evi) async {
+
+
     List<String> base64 = [];
 
     /// converte json -> lista
@@ -115,10 +116,13 @@ class SyncService {
     for (var path in imagens) {
       if (File(path).existsSync()) {
         final imageBase64 = await _imageService.convertImageBase64(path);
-
         base64.add(imageBase64);
       }
     }
+
+
+    
+    try {
 
     final model = CreateEvidenciasModel(
       evidenciarotaID: evi.evidenciaId,
@@ -133,11 +137,12 @@ class SyncService {
       longitude: evi.long,
       alimentador: evi.alimentador,
       base64: base64,
-      tema: evi.tema.index,
+      tema: evi.temaFiscalizacao,
+      subtema: (jsonDecode(evi.subTemaFiscalizacao) as List)
+      .map((e) => int.parse(e.toString()))
+      .toList(),
       emergencial: evi.emergencial,
     );
-
-    try {
       final sucesso = await _service.post(model);
 
       if (sucesso) {
@@ -158,7 +163,8 @@ class SyncService {
       identificacao: evi.identificacao,
       endereco: evi.endereco,
       alimentador: evi.alimentador,
-      tema: evi.tema.index,
+      tema: evi.tema,
+      subtema: evi.subtema,
       emergencial: evi.emergencial,
     );
 

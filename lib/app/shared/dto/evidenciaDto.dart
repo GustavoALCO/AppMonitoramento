@@ -1,5 +1,7 @@
+
 import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/enums/enumTemaFiscalicacao.dart';
 
 class EvidenciaCardDto {
   final String idEvi;
@@ -11,12 +13,12 @@ class EvidenciaCardDto {
   final String? identificacao;
   final String? alimentador;
   final List<String>? lowImage;
-  final List<String>? mediumImage;
   final List<String> originalImage;
   final String horario;
   final double latitude;
   final double longitude;
-  final TipoConstatacao tema;
+  final TemaFiscalizacao tema;
+  final List<SubTemaFiscalizacao> subTema;
   final StatusMode status;
   final bool emergencial;
 
@@ -30,12 +32,12 @@ class EvidenciaCardDto {
     required this.identificacao,
     required this.alimentador,
     this.lowImage,
-    this.mediumImage,
     required this.originalImage,
     required this.horario,
     required this.latitude,
     required this.longitude,
     required this.tema,
+    required this.subTema,  
     required this.status,
     required this.emergencial,
   });

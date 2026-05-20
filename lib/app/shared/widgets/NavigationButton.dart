@@ -21,7 +21,7 @@ class NavigationButton extends StatelessWidget {
         elevation: selected ? 6 : 6,
         backgroundColor:
             selected ? AppColors.primary : Colors.grey.shade300,
-        foregroundColor: Colors.black,
+        foregroundColor: selected ? AppColors.cards : Colors.black,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),

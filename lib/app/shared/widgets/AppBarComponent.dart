@@ -13,20 +13,32 @@ class AppbarComponent extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      backgroundColor: AppColors.primary,
+      automaticallyImplyLeading: false,
+
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu, color: AppColors.cards),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
+      ),
+
+      centerTitle: true,
       title: Text(
         title,
         style: const TextStyle(
           fontSize: 20.0,
           fontWeight: FontWeight.bold,
+          color: AppColors.cards
         ),
       ),
-      centerTitle: true,
-      backgroundColor: AppColors.primary,
 
       actions: [
         if (logoff)
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: AppColors.cards),
             onPressed: () {
               _tokenService.deleteToken();
               Navigator.pushReplacementNamed(context, "/login");

@@ -28,7 +28,7 @@ class EvidenciasService {
         "Content-Type": "application/json",
       },
     );
-
+    
     return (data as List).map((json) => EvidenciaModel.fromJson(json)).toList();
     } catch (e) 
     {
@@ -74,7 +74,6 @@ class EvidenciasService {
         "Content-Type": "application/json",
       },
     );
-
     // Retorno booleano
     return response['statusCode'] == 200 || response['statusCode'] == 201;
   }

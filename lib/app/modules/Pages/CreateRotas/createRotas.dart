@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/enums/enumConc.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
-import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
+import 'package:monitoramento/app/shared/widgets/AppBarComponent.dart';
+import 'package:monitoramento/app/shared/widgets/ButtonDeploy.dart';
 import 'package:monitoramento/app/shared/widgets/InputComponent.dart';
 import 'package:monitoramento/app/shared/widgets/SelectBoxComponent.dart';
 import 'package:monitoramento/core/features/data/fiscais/fiscais_service.dart';
@@ -80,7 +81,8 @@ class _CreaterotasState extends State<Createrotas> {
       appBar: AppbarComponent("Criar Rotas", false),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+          : Center(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,25 +156,19 @@ class _CreaterotasState extends State<Createrotas> {
 
                   const SizedBox(height: 30),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: () {
-                        _salvarRota();
-                      },
-                      child: const Text(
-                        "Salvar Rota",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
+                  Buttondeploy(
+                    text: "Salvar Rota", 
+                    iconEnabled: false, 
+                    select: true, 
+                    onPressed: () 
+                    {
+                      _salvarRota();
+                    }
                   ),
                 ],
               ),
             ),
+          )
     );
   }
 
@@ -210,7 +206,7 @@ class _CreaterotasState extends State<Createrotas> {
       Navigator.popAndPushNamed(
         context,
         "/rotas",
-        arguments: jwt.getIdPayload(),
+        arguments: jwt.getIdPayload(), 
       );
     } catch (e) {
       ScaffoldMessenger.of(

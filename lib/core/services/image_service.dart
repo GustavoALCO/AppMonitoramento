@@ -12,6 +12,8 @@ class ImageService {
     try {
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.camera,
+        maxHeight: 1226,
+        maxWidth: 920,
         preferredCameraDevice: CameraDevice.rear
         
       );

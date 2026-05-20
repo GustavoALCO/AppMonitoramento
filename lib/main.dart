@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/modules/Pages/CreateRotas/createRotas.dart';
+import 'package:monitoramento/app/modules/Pages/CreateUsers/createUsers.dart';
 import 'package:monitoramento/app/modules/Pages/Evidencias/EvidenciasPage.dart';
 import 'package:monitoramento/app/modules/Pages/GenerateZip/GenerateZip.dart';
 import 'package:monitoramento/app/modules/Pages/Home/HomePage.dart';
@@ -115,7 +116,7 @@ class MyApp extends StatelessWidget {
 
           '/revisao': (context) {
             final id = ModalRoute.of(context)!.settings.arguments as String;
-            return Revisaopage(id: id);
+            return Revisaopage(id: id,);
           },
 
           '/selectDocument': (context) => Selectdocument(),
@@ -125,6 +126,8 @@ class MyApp extends StatelessWidget {
 
             return EvidenciasPage(mode: EvidenciaMode.criar, rotaId: id);
           },
+          
+          '/createUsers': (context) => Createusers(),
 
           '/alterarEvidencia': (context) {
             final model =
