@@ -113,6 +113,7 @@ class MyApp extends StatelessWidget {
           '/rotas': (context) => RotaPage(),
 
           '/criarRotas' : (context) => Createrotas(),
+          
 
           '/revisao': (context) {
             final id = ModalRoute.of(context)!.settings.arguments as String;
@@ -127,6 +128,17 @@ class MyApp extends StatelessWidget {
             return EvidenciasPage(mode: EvidenciaMode.criar, rotaId: id);
           },
           
+          '/cloneEvidencia': (context) {
+            final model =
+                ModalRoute.of(context)!.settings.arguments as EvidenciaCardDto;
+
+            return EvidenciasPage(
+              mode: EvidenciaMode.clone,
+              model: model,
+              rotaId: model.rotaId,
+            );
+          },
+
           '/createUsers': (context) => Createusers(),
 
           '/alterarEvidencia': (context) {
@@ -139,6 +151,7 @@ class MyApp extends StatelessWidget {
               rotaId: model.rotaId,
             );
           },
+
           '/gerarZip': (context) {
             final mode = ModalRoute.of(context)!.settings.arguments as ZipMode;
 

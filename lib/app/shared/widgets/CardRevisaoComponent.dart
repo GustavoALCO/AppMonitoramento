@@ -27,10 +27,11 @@ class CardRevisaoComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<String> imagens;
 
-    if (evidencia.status.index == StatusMode.local.index) {
-      imagens = List.from(evidencia.originalImage as Iterable<dynamic>);
+    if (evidencia.status == StatusMode.local) {
+      imagens = List<String>.from(
+        evidencia.originalImage as Iterable<dynamic>,
+      );
     } else {
-      //Se
       imagens = evidencia.originalImage;
     }
 
@@ -40,10 +41,17 @@ class CardRevisaoComponent extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 232, 232, 232),
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [BoxShadow(blurRadius: 4, offset: Offset(0, 2))],
-
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
         border: evidencia.emergencial
-            ? Border.all(color: AppColors.primary, width: 2)
+            ? Border.all(
+                color: AppColors.primary,
+                width: 2,
+              )
             : null,
       ),
       child: Column(
@@ -63,12 +71,16 @@ class CardRevisaoComponent extends StatelessWidget {
           Center(
             child: Text(
               evidencia.tema.name,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
 
           const SizedBox(height: 12),
 
+          /// SUBTEMAS
           Column(
             children: [
               for (var sub in evidencia.subTema)
@@ -93,11 +105,18 @@ class CardRevisaoComponent extends StatelessWidget {
           /// IDENTIFICADOR
           if (evidencia.identificacao != null &&
               evidencia.identificacao!.isNotEmpty)
-            _buildInfo("Identificador:", evidencia.identificacao!),
+            _buildInfo(
+              "Identificador:",
+              evidencia.identificacao!,
+            ),
 
           /// DESCRIÇÃO
-          if (evidencia.descricao != null && evidencia.descricao!.isNotEmpty)
-            _buildInfo("Descrição:", evidencia.descricao!),
+          if (evidencia.descricao != null &&
+              evidencia.descricao!.isNotEmpty)
+            _buildInfo(
+              "Descrição:",
+              evidencia.descricao!,
+            ),
         ],
       ),
     );
@@ -113,12 +132,14 @@ class CardRevisaoComponent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _statusCard(evidencia.status),
+
               Text(
                 "Data: ${evidencia.horario}",
                 style: const TextStyle(fontSize: 13),
               ),
 
-              if (evidencia.alimentador!.isNotEmpty)
+              if (evidencia.alimentador != null &&
+                  evidencia.alimentador!.isNotEmpty)
                 Text(
                   "Alimentador: ${evidencia.alimentador}",
                   style: const TextStyle(
@@ -142,15 +163,23 @@ class CardRevisaoComponent extends StatelessWidget {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF000000), // Shadow color
+                    spreadRadius: 0.2, // How much the shadow expands
+                    blurRadius: 5, // Softness of the shadow
+                    offset: Offset(1, 1), // Position: Offset(x, y)
+                  ),
+                ],
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.black),
               ),
               child: Center(
+                
                 child: Text(
                   "$count",
                   style: const TextStyle(
-                    color: AppColors.secondary,
+                    color: AppColors.cards,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -159,8 +188,17 @@ class CardRevisaoComponent extends StatelessWidget {
 
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
+
               onSelected: (value) {
                 switch (value) {
+                  case 'clone':
+                    Navigator.popAndPushNamed(
+                      context,
+                      "/cloneEvidencia",
+                      arguments: evidencia,
+                    );
+                    break;
+
                   case 'edit':
                     Navigator.popAndPushNamed(
                       context,
@@ -181,10 +219,29 @@ class CardRevisaoComponent extends StatelessWidget {
                     break;
                 }
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Editar')),
-                PopupMenuItem(value: 'delete', child: Text('Excluir')),
-                PopupMenuItem(value: 'view', child: Text('Maps')),
+
+              itemBuilder: (context) => [
+                /// MOSTRA APENAS SE FOR LOCAL
+                if (evidencia.status == StatusMode.local)
+                  const PopupMenuItem(
+                    value: 'clone',
+                    child: Text('Clonar'),
+                  ),
+
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Editar'),
+                ),
+
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Excluir'),
+                ),
+
+                const PopupMenuItem(
+                  value: 'view',
+                  child: Text('Maps'),
+                ),
               ],
             ),
           ],
@@ -195,7 +252,9 @@ class CardRevisaoComponent extends StatelessWidget {
 
   /// IMAGENS
   Widget _buildImages(List<String> imagens) {
-    if (imagens.isEmpty) return const SizedBox.shrink();
+    if (imagens.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return SizedBox(
       height: 300,
@@ -211,14 +270,16 @@ class CardRevisaoComponent extends StatelessWidget {
                 ? Image.file(
                     File(img),
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        const Center(child: Icon(Icons.image_not_supported)),
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.image_not_supported),
+                    ),
                   )
                 : Image.network(
                     img,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        const Center(child: Icon(Icons.image_not_supported)),
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.image_not_supported),
+                    ),
                   ),
           );
         },
@@ -226,6 +287,7 @@ class CardRevisaoComponent extends StatelessWidget {
     );
   }
 
+  /// INFO
   Widget _buildInfo(String titulo, String valor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -234,30 +296,54 @@ class CardRevisaoComponent extends StatelessWidget {
         children: [
           Text(
             titulo,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-          Expanded(child: Text(valor, style: const TextStyle(fontSize: 14))),
+
+          Expanded(
+            child: Text(
+              valor,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
         ],
       ),
     );
   }
 
+  /// STATUS
   Widget _statusCard(StatusMode mode) {
     Icon icon;
 
     switch (mode) {
       case StatusMode.local:
-        icon = const Icon(Icons.sd_storage, size: 17);
+        icon = const Icon(
+          Icons.sd_storage,
+          size: 17,
+        );
         break;
+
       case StatusMode.enviado:
-        icon = const Icon(Icons.cloud_upload, size: 17);
+        icon = const Icon(
+          Icons.cloud_upload,
+          size: 17,
+        );
         break;
+
       case StatusMode.erro:
-        icon = const Icon(Icons.error, size: 17);
+        icon = const Icon(
+          Icons.error,
+          size: 17,
+        );
         break;
     }
 
-    return Padding(padding: const EdgeInsets.all(5), child: icon);
+    return Padding(
+      padding: const EdgeInsets.all(5),
+      child: icon,
+    );
   }
 
   /// CONFIRMAR EXCLUSÃO
@@ -266,21 +352,37 @@ class CardRevisaoComponent extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Confirmar exclusão"),
-        content: const Text("Deseja realmente excluir esta evidência?"),
+
+        content: const Text(
+          "Deseja realmente excluir esta evidência?",
+        ),
+
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+
             child: const Text(
               "Cancelar",
-              style: TextStyle(color: AppColors.secondary),
+              style: TextStyle(
+                color: AppColors.secondary,
+              ),
             ),
           ),
+
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              onDelete(evidencia.idEvi, evidencia.status);
+
+              onDelete(
+                evidencia.idEvi,
+                evidencia.status,
+              );
             },
-            child: const Text("Excluir", style: TextStyle(color: Colors.red)),
+
+            child: const Text(
+              "Excluir",
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

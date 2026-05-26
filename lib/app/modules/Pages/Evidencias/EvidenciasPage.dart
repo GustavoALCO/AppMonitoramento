@@ -87,7 +87,7 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
     _internetService = InternetService();
     _bdEvidenciasService = BdEvidenciasService();
 
-    if (widget.mode == EvidenciaMode.alterar && widget.model != null) {
+    if (widget.mode == EvidenciaMode.alterar && widget.model != null || widget.mode == EvidenciaMode.clone && widget.model != null) {
       final model = widget.model!;
 
       enderecoController.text = model.endereco;
@@ -186,17 +186,28 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       return;
     }
 
+    if (subTemasSelecionados.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "É Necessário Selecionar Pelo Menos 1 Subtema",
+          ),
+        ),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
 
     try {
       if (widget.mode.index ==
-          EvidenciaMode.criar.index) {
+          EvidenciaMode.criar.index || widget.mode.index == EvidenciaMode.clone.index ) {
         await _bdEvidenciasService.criarEvidencia(
           widget.rotaId,
           await _tokenService.getIdPayload() ?? 0,
           pathImages,
-          geo!.latitude,
-          geo!.longitude,
+          geo?.latitude ?? widget.model?.latitude ?? 0,
+          geo?.longitude ?? widget.model?.longitude ?? 0,
           enderecoController.text,
           cidadeController.text,
           descricaoController.text,
@@ -288,29 +299,82 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       ],
     );
   }
+  Future<void> _removerImagem(String path) async {
+  try {
+    final file = File(path);
+
+    if (await file.exists()) {
+      await file.delete();
+    }
+
+    setState(() {
+      pathImages.remove(path);
+    });
+  } catch (e) {
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Erro ao remover imagem"),
+      ),
+    );
+  }
+}
 
   Widget _imageBox(String path) {
-    final bool isNetwork =
-        path.startsWith("http");
+  final bool isNetwork = path.startsWith("http");
 
-    return GestureDetector(
-      onTap: () => _openImageDialog(path),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: isNetwork
-            ? Image.network(
-                path,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              )
-            : Image.file(
-                File(path),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
+  return Stack(
+      children: [
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () => _openImageDialog(path),
+
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+
+              child: isNetwork
+                  ? Image.network(
+                      path,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    )
+                  : Image.file(
+                      File(path),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+            ),
+          ),
+        ),
+
+        if (widget.mode == EvidenciaMode.criar || widget.mode == EvidenciaMode.clone)
+        /// BOTÃO REMOVER
+        Positioned(
+          top: 8,
+          right: 8,
+
+          child: GestureDetector(
+            onTap: () => _removerImagem(path),
+
+            child: Container(
+              padding: const EdgeInsets.all(10),
+
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
               ),
-      ),
+
+              child: const Icon(
+                Icons.delete,
+                color: AppColors.cards,
+                size: 25,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

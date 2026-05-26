@@ -66,6 +66,8 @@ class ApiClient {
         'data': response.data, // dynamic
       };
     } on DioException catch (e) {
+      print("Erro na requisição POST: ${e.message}");
+
       return <String, dynamic>{
         'statusCode': e.response?.statusCode ?? 0,
         'data': e.response?.data ?? e.message,
