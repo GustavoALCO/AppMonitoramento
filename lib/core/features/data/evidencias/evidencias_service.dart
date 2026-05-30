@@ -74,7 +74,6 @@ class EvidenciasService {
         "Content-Type": "application/json",
       },
     );
-    print(response.toString());
     // Retorno booleano
     return response['statusCode'] == 200 || response['statusCode'] == 201;
   }

@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/mappers/subTemaMapper.dart';
@@ -134,8 +135,9 @@ class CardRevisaoComponent extends StatelessWidget {
               _statusCard(evidencia.status),
 
               Text(
-                "Data: ${evidencia.horario}",
-                style: const TextStyle(fontSize: 13),
+                "Data: ${DateFormat('dd/MM/yyyy HH:mm').format(
+                  DateTime.parse(evidencia.horario),
+                )}",
               ),
 
               if (evidencia.alimentador != null &&

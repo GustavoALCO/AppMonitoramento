@@ -102,11 +102,15 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
       subTemasSelecionados =
       [model.subTema.first.index];
 
-      if (model.status.index == StatusMode.local.index) {
+      if (widget.mode == EvidenciaMode.clone) {
+        pathImages = [];
+      }
+      else if (model.status.index == StatusMode.local.index) {
         pathImages = List.from(
           model.originalImage as Iterable<dynamic>,
         );
-      } else {
+      }
+      else {
         pathImages = model.originalImage;
       }
     }
@@ -205,6 +209,9 @@ class _EvidenciasPageState extends State<EvidenciasPage> {
         await _bdEvidenciasService.criarEvidencia(
           widget.rotaId,
           await _tokenService.getIdPayload() ?? 0,
+          DateTime.tryParse(
+            (widget.model?.horario ?? "").replaceAll("Z", ""),
+          ) ?? DateTime.now(),
           pathImages,
           geo?.latitude ?? widget.model?.latitude ?? 0,
           geo?.longitude ?? widget.model?.longitude ?? 0,

@@ -48,7 +48,6 @@ class SyncService {
 
     _started = true;
 
-    print("SyncService iniciada");
 
     sincronizar();
 
@@ -56,14 +55,9 @@ class SyncService {
         _connectivity.onConnectivityChanged.listen(
       (List<ConnectivityResult> results) async {
 
-        print(
-          "Mudança conectividade: $results",
-        );
 
         final internet =
             await _temInternet();
-
-        print("Tem internet: $internet");
 
         if (internet) {
           await sincronizar();
@@ -83,8 +77,6 @@ class SyncService {
 
     } catch (e) {
 
-      print("Erro internet: $e");
-
       return false;
     }
   }
@@ -93,28 +85,17 @@ class SyncService {
   Future<void> sincronizar() async {
 
     if (_isSyncing) {
-
-      print("Já sincronizando...");
-
       return;
     }
 
     _isSyncing = true;
-
-    print("==========");
-    print("INICIANDO SYNC");
-    print("==========");
 
     try {
 
       final internet =
           await _temInternet();
 
-      print("Internet disponível: $internet");
-
       if (!internet) {
-
-        print("Sem internet");
 
         return;
       }
@@ -122,19 +103,7 @@ class SyncService {
       final evidencias =
           await _bd.buscarEvidencias();
 
-      print(
-        "Qtd evidências: ${evidencias.length}",
-      );
-
       for (var evi in evidencias) {
-
-        print("----------");
-        print(
-          "EvidenciaId: ${evi.evidenciaId}",
-        );
-
-        print("Status: ${evi.status}");
-        print("Action: ${evi.action}");
 
         // Remove enviados após 24h
         if (evi.status != StatusMode.local) {
@@ -149,15 +118,8 @@ class SyncService {
                     .difference(evi.horario!)
                     .inHours;
 
-            print(
-              "Horas desde envio: $horas",
-            );
 
             if (horas >= 24) {
-
-              print(
-                "Excluindo evidência antiga",
-              );
 
               await _bd.excluirEvidencia(
                 evi.evidenciaId,
@@ -175,7 +137,6 @@ class SyncService {
               evi.status.index !=
                   StatusMode.enviado.index) {
 
-            print("ENVIANDO CREATE");
 
             await _enviarCreate(evi);
 
@@ -184,16 +145,11 @@ class SyncService {
               evi.status.index !=
                   StatusMode.enviado.index) {
 
-            print("ENVIANDO UPDATE");
 
             await _enviarUpdate(evi);
           }
 
-        } catch (e, l) {
-
-          print("Erro item sync");
-          print(e);
-          print(l);
+        } catch (e) {
 
           await _bd.alterarStatus(
             evi.evidenciaId,
@@ -202,17 +158,10 @@ class SyncService {
         }
       }
 
-    } catch (e, l) {
-
-      print("Erro sincronização");
-      print(e);
-      print(l);
-
     } finally {
 
       _isSyncing = false;
 
-      print("SYNC FINALIZADO");
     }
   }
 
@@ -227,42 +176,23 @@ class SyncService {
       List<String> imagens =
           _bd.converterImagens(evi.image);
 
-      print(
-        "Qtd imagens: ${imagens.length}",
-      );
-
       for (var path in imagens) {
 
-        print("Path imagem: $path");
 
         final exists =
             File(path).existsSync();
-
-        print("Existe arquivo: $exists");
-
         if (exists) {
 
           final imageBase64 =
               await _imageService
                   .convertImageBase64(path);
 
-          print(
-            "Base64 size: ${imageBase64.length}",
-          );
-
           base64.add(imageBase64);
 
         } else {
 
-          print(
-            "Arquivo não encontrado",
-          );
         }
       }
-
-      print(
-        "Qtd base64 gerados: ${base64.length}",
-      );
 
       final model = CreateEvidenciasModel(
         evidenciarotaID: evi.evidenciaId,
@@ -291,16 +221,11 @@ class SyncService {
         emergencial: evi.emergencial,
       );
 
-      print("Enviando API...");
 
       final sucesso =
           await _service.post(model);
 
-      print("Resultado API: $sucesso");
-
       if (sucesso) {
-
-        print("Evidência enviada");
 
         await _bd.alterarStatus(
           evi.evidenciaId,
@@ -309,22 +234,13 @@ class SyncService {
 
       } else {
 
-        print("Erro retorno API");
-
         await _bd.alterarStatus(
           evi.evidenciaId,
           StatusMode.erro,
         );
       }
 
-    } catch (e, l) {
-
-      print(
-        'Erro ao enviar evidência',
-      );
-
-      print(e);
-      print(l);
+    } catch (e) {
 
       await _bd.alterarStatus(
         evi.evidenciaId,
@@ -349,14 +265,9 @@ class SyncService {
         emergencial: evi.emergencial,
       );
 
-      print("Atualizando API...");
 
       final sucesso =
           await _service.patch(model);
-
-      print(
-        "Resultado update: $sucesso",
-      );
 
       if (sucesso) {
 
@@ -373,11 +284,7 @@ class SyncService {
         );
       }
 
-    } catch (e, l) {
-
-      print("Erro update");
-      print(e);
-      print(l);
+    } catch (e) {
 
       await _bd.alterarStatus(
         evi.evidenciaId,
@@ -391,6 +298,5 @@ class SyncService {
 
     _subscription?.cancel();
 
-    print("SyncService dispose");
   }
 }

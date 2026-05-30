@@ -101,6 +101,7 @@ class BdEvidenciasService {
   Future<void> criarEvidencia(
     String idRota,
     int idFiscal,
+    DateTime horario,
     List<String> images,
     double lat,
     double long,
@@ -123,7 +124,7 @@ class BdEvidenciasService {
               evidenciaId: Value(uuid.v4()),
               idRota: Value(idRota),
               idFiscal: Value(idFiscal),
-              horario: Value(DateTime.now()),
+              horario: Value(horario),
               image: Value(imagesJson),
               lat: Value(lat),
               long: Value(long),
