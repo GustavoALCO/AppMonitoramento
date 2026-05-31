@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:monitoramento/core/features/data/rotas/rotas_service.dart';
 import 'package:monitoramento/core/features/models/rotas/create_rotas_model.dart';
@@ -15,7 +17,7 @@ class ViewModelRotas extends ChangeNotifier
   List<RotasModel> rotas = [];
   bool isLoading = false;
   String? errorMessage;
-
+  File? fileGerado;
   // Construtor do ViewModel, recebendo o serviço de rotas como dependência
   ViewModelRotas({required RotasService rotasService}) : _rotasService = rotasService;
 
@@ -42,31 +44,6 @@ class ViewModelRotas extends ChangeNotifier
     }
   }
 
-  // metodo para excluir rota
-  void deleteRota(int id, GetFiltersRotasModel filters) async {
-    // Atualiza o estado para indicar que os dados estão sendo carregados
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
-
-    // Tenta deletar a rota usando o serviço, e captura qualquer erro que possa ocorrer
-    try {
-      // Chama o método do serviço para deletar a rota, passando o ID da rota a ser deletada
-      await _rotasService.deleteRota(id);
-      // Após deletar, recarrega a lista de rotas para refletir a mudança
-      await loadRotas(filters);
-    } 
-      // Se ocorrer um erro durante a deleção, atualiza o estado com a mensagem de erro
-    catch (e) {
-      errorMessage = 'Erro ao deletar rota: $e';
-    } 
-      // Manda o estado para indicar que o carregamento terminou, seja com sucesso ou com erro
-    finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
   // Método para limpar os dados do ViewModel
   void clearRotas() {
     rotas.clear();
@@ -76,7 +53,7 @@ class ViewModelRotas extends ChangeNotifier
   }
 
   // metodo para criar rota
-  Future<void> createRota(CreateRotasModel data, GetFiltersRotasModel filters) async {
+  Future<void> createRota(CreateRotasModel data) async {
     // Atualiza o estado para indicar que os dados estão sendo carregados
     isLoading = true;
     errorMessage = null;
@@ -85,9 +62,8 @@ class ViewModelRotas extends ChangeNotifier
     // Tenta criar a rota usando o serviço, e captura qualquer erro que possa ocorrer
     try {
       // Chama o método do serviço para criar uma nova rota, passando os dados da nova rota
-      //await _rotasService.createRota(data);
+      await _rotasService.post(data);
       // Após criar, recarrega a lista de rotas para refletir a mudança
-      await loadRotas(filters);
     } 
       // Se ocorrer um erro durante a criação, atualiza o estado com a mensagem de erro
     catch (e) {
@@ -126,7 +102,7 @@ class ViewModelRotas extends ChangeNotifier
   }
 
   // metodo para adicionar fiscal a rota
-  Future<void> adicionarFiscalRota(ManageRotaFiscaisModel data, int id ) async {
+  Future<void> adicionarFiscalRota(ManageRotaFiscaisModel data, String id ) async {
     // Atualiza o estado para indicar que os dados estão sendo carregados
     isLoading = true;
     errorMessage = null;
@@ -151,7 +127,7 @@ class ViewModelRotas extends ChangeNotifier
   }
 
   // metodo para remover fiscal da rota
-  Future<void> removerFiscalRota(ManageRotaFiscaisModel data, int id ) async {
+  Future<void> removerFiscalRota(ManageRotaFiscaisModel data, String id ) async {
     // Atualiza o estado para indicar que os dados estão sendo carregados
     isLoading = true;
     errorMessage = null;
@@ -176,7 +152,7 @@ class ViewModelRotas extends ChangeNotifier
   }
 
   // metodo para buscar rota por id
-  Future<void> buscarRotaPorId(int id) async {
+  Future<void> buscarRotaPorId(String id) async {
     // Atualiza o estado para indicar que os dados estão sendo carregados
     isLoading = true;
     errorMessage = null;
@@ -197,5 +173,4 @@ class ViewModelRotas extends ChangeNotifier
       notifyListeners();
     }
   }
-
 }

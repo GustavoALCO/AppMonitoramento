@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:monitoramento/core/config/api_config.dart';
 import 'package:monitoramento/core/services/token_service.dart';
@@ -14,41 +16,63 @@ class ApiClient {
     Map<String, dynamic>? filters,
     Map<String, dynamic>? headers,
   ) async {
-
     final response = await dio.get(
       endpoint,
       queryParameters: filters,
       options: Options(headers: headers),
     );
-    
+
     return response.data;
   }
 
-  // POST
-Future<Map<String, dynamic>> post(
+  Future<Uint8List> getFile(
   String endpoint, {
   required Map<String, dynamic> body,
   Map<String, dynamic>? headers,
 }) async {
-  try {
-    final response = await dio.post(
-      endpoint,
-      data: body,
-      options: Options(headers: headers),
-    );
+  final response = await dio.post(
+    endpoint,
+    data: body,
+    options: Options(
+      headers: headers,
+      responseType: ResponseType.bytes,
+    ),
+  );
 
-    // Força String para as chaves e int/dynamic para os valores
-    return <String, dynamic>{
-      'statusCode': response.statusCode, // int
-      'data': response.data,             // dynamic
-    };
-  } on DioException catch (e) {
-    return <String, dynamic>{
-      'statusCode': e.response?.statusCode ?? 0,
-      'data': e.response?.data ?? e.message,
-    };
-  }
+  final data = response.data;
+
+  if (data is Uint8List) return data;
+
+  if (data is List<int>) return Uint8List.fromList(data);
+
+  throw Exception("Resposta inválida para arquivo: ${data.runtimeType}");
 }
+
+  // POST
+  Future<Map<String, dynamic>> post(
+    String endpoint, {
+    required Map<String, dynamic> body,
+    Map<String, dynamic>? headers,
+  }) async {
+    try {
+      final response = await dio.post(
+        endpoint,
+        data: body,
+        options: Options(headers: headers),
+      );
+      // Força String para as chaves e int/dynamic para os valores
+      return <String, dynamic>{
+        'statusCode': response.statusCode, // int
+        'data': response.data, // dynamic
+      };
+    } on DioException catch (e) {
+
+      return <String, dynamic>{
+        'statusCode': e.response?.statusCode ?? 0,
+        'data': e.response?.data ?? e.message,
+      };
+    }
+  }
 
   // POST
   Future<dynamic> login(
@@ -56,12 +80,22 @@ Future<Map<String, dynamic>> post(
     required Map<String, dynamic> body,
     Map<String, dynamic>? headers,
   }) async {
-    final response = await dio.post(endpoint, data: body, options: Options(headers: headers));
+    final response = await dio.post(
+      endpoint,
+      data: body,
+      options: Options(headers: headers),
+    );
     return response.data;
   }
 
-  Future<dynamic> verifyjwt(String endpoint, Map<String, dynamic>? headers) async {
-    final response = await dio.get(endpoint, options: Options(headers: headers));
+  Future<dynamic> verifyjwt(
+    String endpoint,
+    Map<String, dynamic>? headers,
+  ) async {
+    final response = await dio.get(
+      endpoint,
+      options: Options(headers: headers),
+    );
     return response.statusCode;
   }
 
@@ -71,13 +105,20 @@ Future<Map<String, dynamic>> post(
     required Map<String, dynamic> body,
     Map<String, dynamic>? headers,
   }) async {
-    final response = await dio.patch(endpoint, data: body, options: Options(headers: headers));
+    final response = await dio.patch(
+      endpoint,
+      data: body,
+      options: Options(headers: headers),
+    );
     return response.statusCode;
   }
 
   // DELETE
-  Future<dynamic> delete(String endpoint, Map<String, dynamic>? headers,) async {
-    final response = await dio.delete(endpoint, options: Options(headers: headers));
+  Future<dynamic> delete(String endpoint, Map<String, dynamic>? headers) async {
+    final response = await dio.delete(
+      endpoint,
+      options: Options(headers: headers),
+    );
     return response.statusCode;
   }
 }

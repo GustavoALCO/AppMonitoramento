@@ -1,8 +1,12 @@
+import 'package:monitoramento/app/shared/enums/enumConc.dart';
+
 class RotasModel {
   // Declarando os atributos da classe
-  final int id;
+  final String id;
   final String nome;
   final String alimentador;
+  final Conc conc;
+  final double? km;
   final String dataInicio;
   final String? dataFinal;
 
@@ -11,6 +15,8 @@ class RotasModel {
     required this.id,
     required this.nome,
     required this.alimentador,
+    required this.conc,
+    this.km,
     required this.dataInicio,
     this.dataFinal,
   });
@@ -21,6 +27,8 @@ class RotasModel {
       id: json['rotaId'],
       nome: json['nomeRota'] ?? "Rota sem nome",
       alimentador: json['alimentador'] ?? "Alimentador não informado",
+      conc: Conc.values[json['concessionarias'] ?? 0],
+      km: json['km'] as double?,  
       dataInicio: json['dataInicio'] ?? "Data não informada",
       dataFinal: json['dataFinal'],
     );

@@ -1,0 +1,21 @@
+enum Conc{
+  CPFL_Paulista,
+  CPFL_Piratininga,
+  CPFL_Santa_Cruz,
+  EDP,
+  ENEL,
+  ENERGISA,
+  ELEKTRO,
+  CETRIL,
+  CERMC,
+  CERIM,
+  CEDRAP,
+  CEMIRIM,
+  CERPRO,
+  CERRP,
+  CERNHE,
+  CERIS,
+  CERIPA,
+  COOPERLUZ_SP,
+  CERES
+}

@@ -3,9 +3,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/dto/evidenciaDto.dart';
+import 'package:monitoramento/app/shared/enums/enumFiscalizacao.dart';
+import 'package:monitoramento/app/shared/enums/enumSharedMode.dart';
 import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
+import 'package:monitoramento/app/shared/enums/enumTemaFiscalicacao.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
-import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
+import 'package:monitoramento/app/shared/widgets/AppBarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ListRevisaoComponent.dart';
 import 'package:monitoramento/core/features/data/evidencias/evidencias_service.dart';
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
@@ -15,9 +18,10 @@ import 'package:monitoramento/core/services/sync_service.dart';
 import 'package:monitoramento/core/services/token_service.dart';
 
 class Revisaopage extends StatefulWidget {
-  final int id;
+  final String id;
+  final bool? isfiniched;
 
-  const Revisaopage({super.key, required this.id});
+  const Revisaopage({super.key, required this.id, this.isfiniched});
 
   @override
   State<Revisaopage> createState() => _RevisaopageState();
@@ -80,16 +84,18 @@ class _RevisaopageState extends State<Revisaopage> {
       fiscal: evi.fiscal,
       descricao: evi.descricao,
       endereco: evi.endereco,
+      cidade: evi.cidade ?? "",
       identificacao: evi.identificacao,
       alimentador: evi.alimentador,
       lowImage: evi.lowImageUrl,
-      mediumImage: evi.mediumImageUrl,
       originalImage: evi.lowImageUrl,
       horario: evi.horario.toString(),
       latitude: evi.latitude,
       longitude: evi.longitude,
       tema: evi.temaFiscalizacao,
+      subTema: evi.subTemaFiscalizacao,
       status: StatusMode.enviado,
+      emergencial: evi.emergencial,
     );
   }
 
@@ -106,6 +112,11 @@ class _RevisaopageState extends State<Revisaopage> {
         paginaAtual,
         pageSize,
       );
+
+      if (evicloud.isEmpty) {
+        await buscaLocal();
+        return;
+      }
 
       /// API
       for (var evi in evicloud) {
@@ -142,15 +153,13 @@ class _RevisaopageState extends State<Revisaopage> {
         novas.add(evidenciaApiToDto(evi));
       }
 
-      //verifica se o valor passado é maior que igual a 0 
-      bool atingiuLimite  = evicloud.length / 2 > 0;
+      bool atingiuLimite = evicloud.length >= pageSize;
 
       //caso não for maior manda buscar mais evidencias no local
-      if (atingiuLimite)
-      {
+      if (!atingiuLimite) {
         buscaLocal();
       }
-      
+
       setState(() {
         paginaAtual = proximaPagina;
         revisoes.addAll(novas);
@@ -169,28 +178,46 @@ class _RevisaopageState extends State<Revisaopage> {
   Future<void> buscaLocal() async {
     List<EvidenciaCardDto> listaTemp = [];
 
-    var evilocal = await _service.buscarEvidenciasID(widget.id);
+    var evilocal = await _service.buscarEvidenciasIDRota(widget.id);
 
     final fiscal = await _tokenService.getNameFiscal() ?? "";
 
-    if (evilocal.isEmpty) return;
+    if (evilocal.isEmpty) {
+      setState(() {
+        isLoading = false;
+        hasMore = false;
+      });
+      return;
+    }
 
     for (var evi in evilocal) {
+      if (evi.action.index == SharedMode.update.index) {
+        continue;
+      }
       listaTemp.add(
         EvidenciaCardDto(
+
           idEvi: evi.evidenciaId,
           rotaId: evi.idRota,
           fiscal: fiscal,
           descricao: evi.descricao,
-          endereco: evi.endereco,
+          endereco: evi.endereco!,
+          cidade: evi.cidade!,
           identificacao: evi.identificacao,
           alimentador: evi.alimentador,
-          originalImage: List<String>.from(jsonDecode(evi.image)),
+          originalImage: List<String>.from(jsonDecode(evi.image ?? "[]")),
           horario: "${evi.horario}Z",
-          latitude: evi.lat,
-          longitude: evi.long,
-          tema: evi.tema,
+          latitude: evi.lat ?? 0.0,
+          longitude: evi.long ?? 0.0,
+          tema: TemaFiscalizacao.values[evi.temaFiscalizacao ?? 0],
+          //TEMPORARIO
+          subTema: evi.subTemaFiscalizacao != null
+          ? (jsonDecode(evi.subTemaFiscalizacao!) as List)
+              .map((e) => SubTemaFiscalizacao.values[e as int])
+              .toList()
+          : [],
           status: StatusMode.local,
+          emergencial: evi.emergencial,
         ),
       );
     }
@@ -213,20 +240,18 @@ class _RevisaopageState extends State<Revisaopage> {
   Future<void> _excluirEvidencia(String id, StatusMode mode) async {
     try {
       if (mode == StatusMode.enviado) {
-        
-         await _evidenciasService.deleteEvidencia(id);
+        await _evidenciasService.deleteEvidencia(id);
         setState(() {
           // ignore: unrelated_type_equality_checks
           revisoes.removeWhere((e) => e.idEvi == id);
         });
       }
-      
-       await _service.excluirEvidencia(id);
-        setState(() {
-          // ignore: unrelated_type_equality_checks
-          revisoes.removeWhere((e) => e.idEvi == id);
-        });
-      
+
+      await _service.excluirEvidencia(id);
+      setState(() {
+        // ignore: unrelated_type_equality_checks
+        revisoes.removeWhere((e) => e.idEvi == id);
+      });
     } catch (e) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
@@ -276,7 +301,9 @@ class _RevisaopageState extends State<Revisaopage> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: widget.isfiniched == true
+    ? null
+    : FloatingActionButton(
         onPressed: _abrirCriarEvidencia,
         backgroundColor: AppColors.cards,
         child: const Icon(Icons.add, color: AppColors.secondary),

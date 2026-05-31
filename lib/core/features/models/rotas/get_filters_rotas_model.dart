@@ -1,7 +1,11 @@
+import 'dart:ffi';
+
 class GetFiltersRotasModel {
   final int id;
   final String? nome;
   final String? alimentador;
+  final Double? km;
+  final int? conc;
   final int? dataInicio;
   final int? dataFinal;
   final int page;
@@ -11,6 +15,8 @@ class GetFiltersRotasModel {
     required this.id,
     this.nome,
     this.alimentador,
+    this.km,
+    this.conc,
     this.dataInicio,
     this.dataFinal,
     required this.page,

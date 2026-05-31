@@ -30,37 +30,19 @@ class Selectboxcomponent<T extends Enum> extends StatelessWidget {
         labelText: label,
         hintText: 'Selecione',
 
-        filled: true,
+        
         fillColor: AppColors.cards,
 
-        labelStyle: TextStyle(
-          color: AppColors.secondary,
-          fontWeight: FontWeight.w500,
-        ),
         floatingLabelStyle: TextStyle(
           color: AppColors.secondary,
           fontWeight: FontWeight.w500,
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.secondary, width: 1),
         ),
 
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: AppColors.secondary, width: 1),
         ),
-
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
+        
       ),
       items: values.map((item) {
         return DropdownMenuItem<T>(

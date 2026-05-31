@@ -32,10 +32,10 @@ class GeoService {
       return {
         //Busca endereço e Numero
         "endereco": "${place.street}, ${place.subThoroughfare}",
-        "cep": place.postalCode,
+        "cidade": place.administrativeArea,
       };
     } catch (_) {
-      return {"endereco": null, "cep": null};
+      return {"endereco": "Erro ao buscar endereço", "cidade": "Cidade não encontrada"};
     }
   }
 

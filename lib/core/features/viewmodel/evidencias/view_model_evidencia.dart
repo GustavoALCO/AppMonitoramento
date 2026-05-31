@@ -17,7 +17,7 @@ class ViewModelEvidencia extends ChangeNotifier
   ViewModelEvidencia({required EvidenciasService serviceEvidencia}) : _serviceEvidencia = serviceEvidencia;
 
   // Método para carregar as evidências
-  Future<void> loadEvidencias(int idFiscal, int page, int pageSize) async {
+  Future<void> loadEvidencias(String idRota, int page, int pageSize) async {
     // Atualiza o estado para indicar que os dados estão sendo carregados
     isLoading = true;
     errorMessage = null;
@@ -26,7 +26,7 @@ class ViewModelEvidencia extends ChangeNotifier
     // Tenta carregar as evidências usando o serviço, e captura qualquer erro que possa ocorrer
     try {
       // Chama o método do serviço para obter as evidências, passando os filtros necessários
-      evidencias = await _serviceEvidencia.getEvidencias(idFiscal, page, pageSize);
+      evidencias = await _serviceEvidencia.getEvidencias(idRota, page, pageSize);
     } 
       // Se ocorrer um erro durante o carregamento, atualiza o estado com a mensagem de erro
     catch (e) {
@@ -69,12 +69,12 @@ class ViewModelEvidencia extends ChangeNotifier
     notifyListeners();
   }
 
-  void deleteEvidencia(String  id,int idFiscal, int page, int pageSize) async {
+  void deleteEvidencia(String  id,String idRota, int page, int pageSize) async {
     try {
       var response = await _serviceEvidencia.deleteEvidencia(id);
       if (response == 200) {
         // Se a exclusão for bem-sucedida, recarrega as evidências para refletir a mudança
-        await loadEvidencias(idFiscal, page, pageSize); 
+        await loadEvidencias(idRota, page, pageSize); 
       } else {
         errorMessage = 'Erro ao deletar evidência: Código de resposta $response';
         notifyListeners();

@@ -29,6 +29,16 @@ class TokenService {
     return int.parse(decodedToken["sub"]);
   }
 
+  Future<bool> getIsAdmin() async {
+  final token = await _storage.read(key: "jwt");
+
+  if (token == null) return false;
+
+  final decodedToken = JwtDecoder.decode(token);
+
+  return decodedToken["Role"]?.toLowerCase() == "admin";
+  }
+
   Future<String?> getNameFiscal() async {
     final token = await _storage.read(key: "jwt");
 

@@ -5,6 +5,7 @@ class CardRotaComponent extends StatelessWidget {
   final String nomeRota;
   final String alimentador;
   final String dataInicio;
+  final String concessionaria;
   final String? dataFinal;
   final VoidCallback? onTap;
 
@@ -13,6 +14,7 @@ class CardRotaComponent extends StatelessWidget {
     required this.nomeRota,
     required this.alimentador,
     required this.dataInicio,
+    required this.concessionaria,
     this.dataFinal,
     this.onTap,
   });
@@ -23,9 +25,7 @@ class CardRotaComponent extends StatelessWidget {
       elevation: 4,
       color: AppColors.cards,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
@@ -34,7 +34,7 @@ class CardRotaComponent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// TÍTULO + SETA
+              
               Row(
                 children: [
                   Expanded(
@@ -65,6 +65,13 @@ class CardRotaComponent extends StatelessWidget {
                 label: "Data Inicial",
                 value: dataInicio,
               ),
+              
+              const SizedBox(height: 6),
+              _infoRow(
+                icon: Icons.house,
+                label: "Distribuidora",
+                value: concessionaria,
+              ),
 
               if (dataFinal != null && dataFinal!.isNotEmpty) ...[
                 const SizedBox(height: 6),
@@ -90,16 +97,8 @@ class CardRotaComponent extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 6),
-        Text(
-          "$label: ",
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        Text("$label: ", style: const TextStyle(fontWeight: FontWeight.bold)),
+        Expanded(child: Text(value, overflow: TextOverflow.ellipsis)),
       ],
     );
   }

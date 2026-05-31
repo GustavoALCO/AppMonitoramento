@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
-import 'package:monitoramento/app/shared/widgets/AppbarComponent.dart';
-import 'package:monitoramento/app/shared/widgets/DialogFilterComponent.dart';
+import 'package:monitoramento/app/shared/widgets/AppBarComponent.dart';
 import 'package:monitoramento/app/shared/widgets/ListRotasComponent.dart';
 import 'package:monitoramento/core/features/data/rotas/rotas_service.dart';
 import 'package:monitoramento/core/features/models/rotas/get_filters_rotas_model.dart';
@@ -55,6 +54,13 @@ class _RotaPageState extends State<RotaPage> {
     });
   }
 
+  Future<void> _abrirCriarEvidencia() async {
+    await Navigator.popAndPushNamed(
+      context,
+      "/criarRotas",
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -81,8 +87,8 @@ class _RotaPageState extends State<RotaPage> {
 
       final resultadoApi = await _rotasService.getRotas(filtro);
 
-      //verifica se o valor do resultado é maior que 0
-      bool atingiuLimite  = resultadoApi.length / 2 > 0;
+     
+      bool atingiuLimite  = resultadoApi.length  >= pageSize;
 
       /// API trouxe dados
       if (resultadoApi.isNotEmpty | atingiuLimite) {
@@ -120,6 +126,8 @@ class _RotaPageState extends State<RotaPage> {
               alimentador: r.alimentador,
               nome: r.nomeRota,
               dataInicio: r.dataInicio,
+              conc: r.conc,
+              km: r.km,
             ),
           )
           .toList();
@@ -148,7 +156,7 @@ class _RotaPageState extends State<RotaPage> {
       final resultado = await _rotasService.getRotas(filtro);
 
       //verifica se o valor do resultado é maior que 0
-      bool atingiuLimite  = resultado.length / 2 > 0;
+      bool atingiuLimite  = resultado.length >= pageSize;
 
       //Mostra evidencias do banco local caso o resultado de evidencias for nulo ou true
       if (resultado.isEmpty | atingiuLimite) {
@@ -171,6 +179,8 @@ class _RotaPageState extends State<RotaPage> {
                 alimentador: r.alimentador,
                 nome: r.nomeRota,
                 dataInicio: r.dataInicio,
+                conc: r.conc,
+                km: r.km,
               ),
             ),
           );
@@ -207,6 +217,8 @@ class _RotaPageState extends State<RotaPage> {
               alimentador: r.alimentador,
               nome: r.nomeRota,
               dataInicio: r.dataInicio,
+              conc: r.conc,
+              km: r.km,
             ),
           ),
         );
@@ -224,42 +236,16 @@ class _RotaPageState extends State<RotaPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.cards,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => const DialogFilterComponent(),
-                  );
-                },
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.article),
-                    SizedBox(width: 8),
-                    Text(
-                      "Filtros",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            
             const SizedBox(height: 16),
             Expanded(child: _buildContent()),
           ],
         ),
+      ),
+       floatingActionButton: FloatingActionButton(
+        onPressed: _abrirCriarEvidencia,
+        backgroundColor: AppColors.cards,
+        child: const Icon(Icons.add, color: AppColors.secondary),
       ),
     );
   }

@@ -22,11 +22,11 @@ class $EvidenciastableTable extends Evidenciastable
   );
   static const VerificationMeta _idRotaMeta = const VerificationMeta('idRota');
   @override
-  late final GeneratedColumn<int> idRota = GeneratedColumn<int>(
+  late final GeneratedColumn<String> idRota = GeneratedColumn<String>(
     'id_rota',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _idFiscalMeta = const VerificationMeta(
@@ -36,20 +36,32 @@ class $EvidenciastableTable extends Evidenciastable
   late final GeneratedColumn<int> idFiscal = GeneratedColumn<int>(
     'id_fiscal',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _temaFiscalizacaoMeta = const VerificationMeta(
+    'temaFiscalizacao',
   );
   @override
-  late final GeneratedColumnWithTypeConverter<TipoConstatacao, int> tema =
-      GeneratedColumn<int>(
-        'tema',
+  late final GeneratedColumn<int> temaFiscalizacao = GeneratedColumn<int>(
+    'tema_fiscalizacao',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _subTemaFiscalizacaoMeta =
+      const VerificationMeta('subTemaFiscalizacao');
+  @override
+  late final GeneratedColumn<String> subTemaFiscalizacao =
+      GeneratedColumn<String>(
+        'sub_tema_fiscalizacao',
         aliasedName,
-        false,
-        type: DriftSqlType.int,
+        true,
+        type: DriftSqlType.string,
         requiredDuringInsert: false,
-        defaultValue: const Constant(0),
-      ).withConverter<TipoConstatacao>($EvidenciastableTable.$convertertema);
+      );
   static const VerificationMeta _identificacaoMeta = const VerificationMeta(
     'identificacao',
   );
@@ -79,18 +91,18 @@ class $EvidenciastableTable extends Evidenciastable
   late final GeneratedColumn<String> descricao = GeneratedColumn<String>(
     'descricao',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _imageMeta = const VerificationMeta('image');
   @override
   late final GeneratedColumn<String> image = GeneratedColumn<String>(
     'image',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _enderecoMeta = const VerificationMeta(
     'endereco',
@@ -99,27 +111,36 @@ class $EvidenciastableTable extends Evidenciastable
   late final GeneratedColumn<String> endereco = GeneratedColumn<String>(
     'endereco',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cidadeMeta = const VerificationMeta('cidade');
+  @override
+  late final GeneratedColumn<String> cidade = GeneratedColumn<String>(
+    'cidade',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _latMeta = const VerificationMeta('lat');
   @override
   late final GeneratedColumn<double> lat = GeneratedColumn<double>(
     'lat',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _longMeta = const VerificationMeta('long');
   @override
   late final GeneratedColumn<double> long = GeneratedColumn<double>(
     'long',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _horarioMeta = const VerificationMeta(
     'horario',
@@ -128,10 +149,25 @@ class $EvidenciastableTable extends Evidenciastable
   late final GeneratedColumn<DateTime> horario = GeneratedColumn<DateTime>(
     'horario',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _emergencialMeta = const VerificationMeta(
+    'emergencial',
+  );
+  @override
+  late final GeneratedColumn<bool> emergencial = GeneratedColumn<bool>(
+    'emergencial',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("emergencial" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   @override
   late final GeneratedColumnWithTypeConverter<StatusMode, int> status =
@@ -158,15 +194,18 @@ class $EvidenciastableTable extends Evidenciastable
     evidenciaId,
     idRota,
     idFiscal,
-    tema,
+    temaFiscalizacao,
+    subTemaFiscalizacao,
     identificacao,
     alimentador,
     descricao,
     image,
     endereco,
+    cidade,
     lat,
     long,
     horario,
+    emergencial,
     status,
     action,
   ];
@@ -206,8 +245,24 @@ class $EvidenciastableTable extends Evidenciastable
         _idFiscalMeta,
         idFiscal.isAcceptableOrUnknown(data['id_fiscal']!, _idFiscalMeta),
       );
-    } else if (isInserting) {
-      context.missing(_idFiscalMeta);
+    }
+    if (data.containsKey('tema_fiscalizacao')) {
+      context.handle(
+        _temaFiscalizacaoMeta,
+        temaFiscalizacao.isAcceptableOrUnknown(
+          data['tema_fiscalizacao']!,
+          _temaFiscalizacaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sub_tema_fiscalizacao')) {
+      context.handle(
+        _subTemaFiscalizacaoMeta,
+        subTemaFiscalizacao.isAcceptableOrUnknown(
+          data['sub_tema_fiscalizacao']!,
+          _subTemaFiscalizacaoMeta,
+        ),
+      );
     }
     if (data.containsKey('identificacao')) {
       context.handle(
@@ -232,45 +287,50 @@ class $EvidenciastableTable extends Evidenciastable
         _descricaoMeta,
         descricao.isAcceptableOrUnknown(data['descricao']!, _descricaoMeta),
       );
-    } else if (isInserting) {
-      context.missing(_descricaoMeta);
     }
     if (data.containsKey('image')) {
       context.handle(
         _imageMeta,
         image.isAcceptableOrUnknown(data['image']!, _imageMeta),
       );
-    } else if (isInserting) {
-      context.missing(_imageMeta);
     }
     if (data.containsKey('endereco')) {
       context.handle(
         _enderecoMeta,
         endereco.isAcceptableOrUnknown(data['endereco']!, _enderecoMeta),
       );
-    } else if (isInserting) {
-      context.missing(_enderecoMeta);
+    }
+    if (data.containsKey('cidade')) {
+      context.handle(
+        _cidadeMeta,
+        cidade.isAcceptableOrUnknown(data['cidade']!, _cidadeMeta),
+      );
     }
     if (data.containsKey('lat')) {
       context.handle(
         _latMeta,
         lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
       );
-    } else if (isInserting) {
-      context.missing(_latMeta);
     }
     if (data.containsKey('long')) {
       context.handle(
         _longMeta,
         long.isAcceptableOrUnknown(data['long']!, _longMeta),
       );
-    } else if (isInserting) {
-      context.missing(_longMeta);
     }
     if (data.containsKey('horario')) {
       context.handle(
         _horarioMeta,
         horario.isAcceptableOrUnknown(data['horario']!, _horarioMeta),
+      );
+    }
+    if (data.containsKey('emergencial')) {
+      context.handle(
+        _emergencialMeta,
+        emergencial.isAcceptableOrUnknown(
+          data['emergencial']!,
+          _emergencialMeta,
+        ),
       );
     }
     return context;
@@ -287,18 +347,20 @@ class $EvidenciastableTable extends Evidenciastable
         data['${effectivePrefix}evidencia_id'],
       )!,
       idRota: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}id_rota'],
       )!,
       idFiscal: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id_fiscal'],
-      )!,
-      tema: $EvidenciastableTable.$convertertema.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.int,
-          data['${effectivePrefix}tema'],
-        )!,
+      ),
+      temaFiscalizacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tema_fiscalizacao'],
+      ),
+      subTemaFiscalizacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sub_tema_fiscalizacao'],
       ),
       identificacao: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -311,26 +373,34 @@ class $EvidenciastableTable extends Evidenciastable
       descricao: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}descricao'],
-      )!,
+      ),
       image: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}image'],
-      )!,
+      ),
       endereco: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}endereco'],
-      )!,
+      ),
+      cidade: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cidade'],
+      ),
       lat: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}lat'],
-      )!,
+      ),
       long: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}long'],
-      )!,
+      ),
       horario: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}horario'],
+      ),
+      emergencial: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}emergencial'],
       )!,
       status: $EvidenciastableTable.$converterstatus.fromSql(
         attachedDatabase.typeMapping.read(
@@ -352,8 +422,6 @@ class $EvidenciastableTable extends Evidenciastable
     return $EvidenciastableTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<TipoConstatacao, int, int> $convertertema =
-      const EnumIndexConverter<TipoConstatacao>(TipoConstatacao.values);
   static JsonTypeConverter2<StatusMode, int, int> $converterstatus =
       const EnumIndexConverter<StatusMode>(StatusMode.values);
   static JsonTypeConverter2<SharedMode, int, int> $converteraction =
@@ -363,32 +431,38 @@ class $EvidenciastableTable extends Evidenciastable
 class EvidenciastableData extends DataClass
     implements Insertable<EvidenciastableData> {
   final String evidenciaId;
-  final int idRota;
-  final int idFiscal;
-  final TipoConstatacao tema;
+  final String idRota;
+  final int? idFiscal;
+  final int? temaFiscalizacao;
+  final String? subTemaFiscalizacao;
   final String? identificacao;
   final String? alimentador;
-  final String descricao;
-  final String image;
-  final String endereco;
-  final double lat;
-  final double long;
-  final DateTime horario;
+  final String? descricao;
+  final String? image;
+  final String? endereco;
+  final String? cidade;
+  final double? lat;
+  final double? long;
+  final DateTime? horario;
+  final bool emergencial;
   final StatusMode status;
   final SharedMode action;
   const EvidenciastableData({
     required this.evidenciaId,
     required this.idRota,
-    required this.idFiscal,
-    required this.tema,
+    this.idFiscal,
+    this.temaFiscalizacao,
+    this.subTemaFiscalizacao,
     this.identificacao,
     this.alimentador,
-    required this.descricao,
-    required this.image,
-    required this.endereco,
-    required this.lat,
-    required this.long,
-    required this.horario,
+    this.descricao,
+    this.image,
+    this.endereco,
+    this.cidade,
+    this.lat,
+    this.long,
+    this.horario,
+    required this.emergencial,
     required this.status,
     required this.action,
   });
@@ -396,12 +470,15 @@ class EvidenciastableData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['evidencia_id'] = Variable<String>(evidenciaId);
-    map['id_rota'] = Variable<int>(idRota);
-    map['id_fiscal'] = Variable<int>(idFiscal);
-    {
-      map['tema'] = Variable<int>(
-        $EvidenciastableTable.$convertertema.toSql(tema),
-      );
+    map['id_rota'] = Variable<String>(idRota);
+    if (!nullToAbsent || idFiscal != null) {
+      map['id_fiscal'] = Variable<int>(idFiscal);
+    }
+    if (!nullToAbsent || temaFiscalizacao != null) {
+      map['tema_fiscalizacao'] = Variable<int>(temaFiscalizacao);
+    }
+    if (!nullToAbsent || subTemaFiscalizacao != null) {
+      map['sub_tema_fiscalizacao'] = Variable<String>(subTemaFiscalizacao);
     }
     if (!nullToAbsent || identificacao != null) {
       map['identificacao'] = Variable<String>(identificacao);
@@ -409,12 +486,28 @@ class EvidenciastableData extends DataClass
     if (!nullToAbsent || alimentador != null) {
       map['alimentador'] = Variable<String>(alimentador);
     }
-    map['descricao'] = Variable<String>(descricao);
-    map['image'] = Variable<String>(image);
-    map['endereco'] = Variable<String>(endereco);
-    map['lat'] = Variable<double>(lat);
-    map['long'] = Variable<double>(long);
-    map['horario'] = Variable<DateTime>(horario);
+    if (!nullToAbsent || descricao != null) {
+      map['descricao'] = Variable<String>(descricao);
+    }
+    if (!nullToAbsent || image != null) {
+      map['image'] = Variable<String>(image);
+    }
+    if (!nullToAbsent || endereco != null) {
+      map['endereco'] = Variable<String>(endereco);
+    }
+    if (!nullToAbsent || cidade != null) {
+      map['cidade'] = Variable<String>(cidade);
+    }
+    if (!nullToAbsent || lat != null) {
+      map['lat'] = Variable<double>(lat);
+    }
+    if (!nullToAbsent || long != null) {
+      map['long'] = Variable<double>(long);
+    }
+    if (!nullToAbsent || horario != null) {
+      map['horario'] = Variable<DateTime>(horario);
+    }
+    map['emergencial'] = Variable<bool>(emergencial);
     {
       map['status'] = Variable<int>(
         $EvidenciastableTable.$converterstatus.toSql(status),
@@ -432,20 +525,39 @@ class EvidenciastableData extends DataClass
     return EvidenciastableCompanion(
       evidenciaId: Value(evidenciaId),
       idRota: Value(idRota),
-      idFiscal: Value(idFiscal),
-      tema: Value(tema),
+      idFiscal: idFiscal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(idFiscal),
+      temaFiscalizacao: temaFiscalizacao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(temaFiscalizacao),
+      subTemaFiscalizacao: subTemaFiscalizacao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subTemaFiscalizacao),
       identificacao: identificacao == null && nullToAbsent
           ? const Value.absent()
           : Value(identificacao),
       alimentador: alimentador == null && nullToAbsent
           ? const Value.absent()
           : Value(alimentador),
-      descricao: Value(descricao),
-      image: Value(image),
-      endereco: Value(endereco),
-      lat: Value(lat),
-      long: Value(long),
-      horario: Value(horario),
+      descricao: descricao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(descricao),
+      image: image == null && nullToAbsent
+          ? const Value.absent()
+          : Value(image),
+      endereco: endereco == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endereco),
+      cidade: cidade == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cidade),
+      lat: lat == null && nullToAbsent ? const Value.absent() : Value(lat),
+      long: long == null && nullToAbsent ? const Value.absent() : Value(long),
+      horario: horario == null && nullToAbsent
+          ? const Value.absent()
+          : Value(horario),
+      emergencial: Value(emergencial),
       status: Value(status),
       action: Value(action),
     );
@@ -458,19 +570,22 @@ class EvidenciastableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EvidenciastableData(
       evidenciaId: serializer.fromJson<String>(json['evidenciaId']),
-      idRota: serializer.fromJson<int>(json['idRota']),
-      idFiscal: serializer.fromJson<int>(json['idFiscal']),
-      tema: $EvidenciastableTable.$convertertema.fromJson(
-        serializer.fromJson<int>(json['tema']),
+      idRota: serializer.fromJson<String>(json['idRota']),
+      idFiscal: serializer.fromJson<int?>(json['idFiscal']),
+      temaFiscalizacao: serializer.fromJson<int?>(json['temaFiscalizacao']),
+      subTemaFiscalizacao: serializer.fromJson<String?>(
+        json['subTemaFiscalizacao'],
       ),
       identificacao: serializer.fromJson<String?>(json['identificacao']),
       alimentador: serializer.fromJson<String?>(json['alimentador']),
-      descricao: serializer.fromJson<String>(json['descricao']),
-      image: serializer.fromJson<String>(json['image']),
-      endereco: serializer.fromJson<String>(json['endereco']),
-      lat: serializer.fromJson<double>(json['lat']),
-      long: serializer.fromJson<double>(json['long']),
-      horario: serializer.fromJson<DateTime>(json['horario']),
+      descricao: serializer.fromJson<String?>(json['descricao']),
+      image: serializer.fromJson<String?>(json['image']),
+      endereco: serializer.fromJson<String?>(json['endereco']),
+      cidade: serializer.fromJson<String?>(json['cidade']),
+      lat: serializer.fromJson<double?>(json['lat']),
+      long: serializer.fromJson<double?>(json['long']),
+      horario: serializer.fromJson<DateTime?>(json['horario']),
+      emergencial: serializer.fromJson<bool>(json['emergencial']),
       status: $EvidenciastableTable.$converterstatus.fromJson(
         serializer.fromJson<int>(json['status']),
       ),
@@ -484,19 +599,20 @@ class EvidenciastableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'evidenciaId': serializer.toJson<String>(evidenciaId),
-      'idRota': serializer.toJson<int>(idRota),
-      'idFiscal': serializer.toJson<int>(idFiscal),
-      'tema': serializer.toJson<int>(
-        $EvidenciastableTable.$convertertema.toJson(tema),
-      ),
+      'idRota': serializer.toJson<String>(idRota),
+      'idFiscal': serializer.toJson<int?>(idFiscal),
+      'temaFiscalizacao': serializer.toJson<int?>(temaFiscalizacao),
+      'subTemaFiscalizacao': serializer.toJson<String?>(subTemaFiscalizacao),
       'identificacao': serializer.toJson<String?>(identificacao),
       'alimentador': serializer.toJson<String?>(alimentador),
-      'descricao': serializer.toJson<String>(descricao),
-      'image': serializer.toJson<String>(image),
-      'endereco': serializer.toJson<String>(endereco),
-      'lat': serializer.toJson<double>(lat),
-      'long': serializer.toJson<double>(long),
-      'horario': serializer.toJson<DateTime>(horario),
+      'descricao': serializer.toJson<String?>(descricao),
+      'image': serializer.toJson<String?>(image),
+      'endereco': serializer.toJson<String?>(endereco),
+      'cidade': serializer.toJson<String?>(cidade),
+      'lat': serializer.toJson<double?>(lat),
+      'long': serializer.toJson<double?>(long),
+      'horario': serializer.toJson<DateTime?>(horario),
+      'emergencial': serializer.toJson<bool>(emergencial),
       'status': serializer.toJson<int>(
         $EvidenciastableTable.$converterstatus.toJson(status),
       ),
@@ -508,34 +624,44 @@ class EvidenciastableData extends DataClass
 
   EvidenciastableData copyWith({
     String? evidenciaId,
-    int? idRota,
-    int? idFiscal,
-    TipoConstatacao? tema,
+    String? idRota,
+    Value<int?> idFiscal = const Value.absent(),
+    Value<int?> temaFiscalizacao = const Value.absent(),
+    Value<String?> subTemaFiscalizacao = const Value.absent(),
     Value<String?> identificacao = const Value.absent(),
     Value<String?> alimentador = const Value.absent(),
-    String? descricao,
-    String? image,
-    String? endereco,
-    double? lat,
-    double? long,
-    DateTime? horario,
+    Value<String?> descricao = const Value.absent(),
+    Value<String?> image = const Value.absent(),
+    Value<String?> endereco = const Value.absent(),
+    Value<String?> cidade = const Value.absent(),
+    Value<double?> lat = const Value.absent(),
+    Value<double?> long = const Value.absent(),
+    Value<DateTime?> horario = const Value.absent(),
+    bool? emergencial,
     StatusMode? status,
     SharedMode? action,
   }) => EvidenciastableData(
     evidenciaId: evidenciaId ?? this.evidenciaId,
     idRota: idRota ?? this.idRota,
-    idFiscal: idFiscal ?? this.idFiscal,
-    tema: tema ?? this.tema,
+    idFiscal: idFiscal.present ? idFiscal.value : this.idFiscal,
+    temaFiscalizacao: temaFiscalizacao.present
+        ? temaFiscalizacao.value
+        : this.temaFiscalizacao,
+    subTemaFiscalizacao: subTemaFiscalizacao.present
+        ? subTemaFiscalizacao.value
+        : this.subTemaFiscalizacao,
     identificacao: identificacao.present
         ? identificacao.value
         : this.identificacao,
     alimentador: alimentador.present ? alimentador.value : this.alimentador,
-    descricao: descricao ?? this.descricao,
-    image: image ?? this.image,
-    endereco: endereco ?? this.endereco,
-    lat: lat ?? this.lat,
-    long: long ?? this.long,
-    horario: horario ?? this.horario,
+    descricao: descricao.present ? descricao.value : this.descricao,
+    image: image.present ? image.value : this.image,
+    endereco: endereco.present ? endereco.value : this.endereco,
+    cidade: cidade.present ? cidade.value : this.cidade,
+    lat: lat.present ? lat.value : this.lat,
+    long: long.present ? long.value : this.long,
+    horario: horario.present ? horario.value : this.horario,
+    emergencial: emergencial ?? this.emergencial,
     status: status ?? this.status,
     action: action ?? this.action,
   );
@@ -546,7 +672,12 @@ class EvidenciastableData extends DataClass
           : this.evidenciaId,
       idRota: data.idRota.present ? data.idRota.value : this.idRota,
       idFiscal: data.idFiscal.present ? data.idFiscal.value : this.idFiscal,
-      tema: data.tema.present ? data.tema.value : this.tema,
+      temaFiscalizacao: data.temaFiscalizacao.present
+          ? data.temaFiscalizacao.value
+          : this.temaFiscalizacao,
+      subTemaFiscalizacao: data.subTemaFiscalizacao.present
+          ? data.subTemaFiscalizacao.value
+          : this.subTemaFiscalizacao,
       identificacao: data.identificacao.present
           ? data.identificacao.value
           : this.identificacao,
@@ -556,9 +687,13 @@ class EvidenciastableData extends DataClass
       descricao: data.descricao.present ? data.descricao.value : this.descricao,
       image: data.image.present ? data.image.value : this.image,
       endereco: data.endereco.present ? data.endereco.value : this.endereco,
+      cidade: data.cidade.present ? data.cidade.value : this.cidade,
       lat: data.lat.present ? data.lat.value : this.lat,
       long: data.long.present ? data.long.value : this.long,
       horario: data.horario.present ? data.horario.value : this.horario,
+      emergencial: data.emergencial.present
+          ? data.emergencial.value
+          : this.emergencial,
       status: data.status.present ? data.status.value : this.status,
       action: data.action.present ? data.action.value : this.action,
     );
@@ -570,15 +705,18 @@ class EvidenciastableData extends DataClass
           ..write('evidenciaId: $evidenciaId, ')
           ..write('idRota: $idRota, ')
           ..write('idFiscal: $idFiscal, ')
-          ..write('tema: $tema, ')
+          ..write('temaFiscalizacao: $temaFiscalizacao, ')
+          ..write('subTemaFiscalizacao: $subTemaFiscalizacao, ')
           ..write('identificacao: $identificacao, ')
           ..write('alimentador: $alimentador, ')
           ..write('descricao: $descricao, ')
           ..write('image: $image, ')
           ..write('endereco: $endereco, ')
+          ..write('cidade: $cidade, ')
           ..write('lat: $lat, ')
           ..write('long: $long, ')
           ..write('horario: $horario, ')
+          ..write('emergencial: $emergencial, ')
           ..write('status: $status, ')
           ..write('action: $action')
           ..write(')'))
@@ -590,15 +728,18 @@ class EvidenciastableData extends DataClass
     evidenciaId,
     idRota,
     idFiscal,
-    tema,
+    temaFiscalizacao,
+    subTemaFiscalizacao,
     identificacao,
     alimentador,
     descricao,
     image,
     endereco,
+    cidade,
     lat,
     long,
     horario,
+    emergencial,
     status,
     action,
   );
@@ -609,32 +750,38 @@ class EvidenciastableData extends DataClass
           other.evidenciaId == this.evidenciaId &&
           other.idRota == this.idRota &&
           other.idFiscal == this.idFiscal &&
-          other.tema == this.tema &&
+          other.temaFiscalizacao == this.temaFiscalizacao &&
+          other.subTemaFiscalizacao == this.subTemaFiscalizacao &&
           other.identificacao == this.identificacao &&
           other.alimentador == this.alimentador &&
           other.descricao == this.descricao &&
           other.image == this.image &&
           other.endereco == this.endereco &&
+          other.cidade == this.cidade &&
           other.lat == this.lat &&
           other.long == this.long &&
           other.horario == this.horario &&
+          other.emergencial == this.emergencial &&
           other.status == this.status &&
           other.action == this.action);
 }
 
 class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
   final Value<String> evidenciaId;
-  final Value<int> idRota;
-  final Value<int> idFiscal;
-  final Value<TipoConstatacao> tema;
+  final Value<String> idRota;
+  final Value<int?> idFiscal;
+  final Value<int?> temaFiscalizacao;
+  final Value<String?> subTemaFiscalizacao;
   final Value<String?> identificacao;
   final Value<String?> alimentador;
-  final Value<String> descricao;
-  final Value<String> image;
-  final Value<String> endereco;
-  final Value<double> lat;
-  final Value<double> long;
-  final Value<DateTime> horario;
+  final Value<String?> descricao;
+  final Value<String?> image;
+  final Value<String?> endereco;
+  final Value<String?> cidade;
+  final Value<double?> lat;
+  final Value<double?> long;
+  final Value<DateTime?> horario;
+  final Value<bool> emergencial;
   final Value<StatusMode> status;
   final Value<SharedMode> action;
   final Value<int> rowid;
@@ -642,56 +789,59 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     this.evidenciaId = const Value.absent(),
     this.idRota = const Value.absent(),
     this.idFiscal = const Value.absent(),
-    this.tema = const Value.absent(),
+    this.temaFiscalizacao = const Value.absent(),
+    this.subTemaFiscalizacao = const Value.absent(),
     this.identificacao = const Value.absent(),
     this.alimentador = const Value.absent(),
     this.descricao = const Value.absent(),
     this.image = const Value.absent(),
     this.endereco = const Value.absent(),
+    this.cidade = const Value.absent(),
     this.lat = const Value.absent(),
     this.long = const Value.absent(),
     this.horario = const Value.absent(),
+    this.emergencial = const Value.absent(),
     this.status = const Value.absent(),
     this.action = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   EvidenciastableCompanion.insert({
     required String evidenciaId,
-    required int idRota,
-    required int idFiscal,
-    this.tema = const Value.absent(),
+    required String idRota,
+    this.idFiscal = const Value.absent(),
+    this.temaFiscalizacao = const Value.absent(),
+    this.subTemaFiscalizacao = const Value.absent(),
     this.identificacao = const Value.absent(),
     this.alimentador = const Value.absent(),
-    required String descricao,
-    required String image,
-    required String endereco,
-    required double lat,
-    required double long,
+    this.descricao = const Value.absent(),
+    this.image = const Value.absent(),
+    this.endereco = const Value.absent(),
+    this.cidade = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.long = const Value.absent(),
     this.horario = const Value.absent(),
+    this.emergencial = const Value.absent(),
     this.status = const Value.absent(),
     this.action = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : evidenciaId = Value(evidenciaId),
-       idRota = Value(idRota),
-       idFiscal = Value(idFiscal),
-       descricao = Value(descricao),
-       image = Value(image),
-       endereco = Value(endereco),
-       lat = Value(lat),
-       long = Value(long);
+       idRota = Value(idRota);
   static Insertable<EvidenciastableData> custom({
     Expression<String>? evidenciaId,
-    Expression<int>? idRota,
+    Expression<String>? idRota,
     Expression<int>? idFiscal,
-    Expression<int>? tema,
+    Expression<int>? temaFiscalizacao,
+    Expression<String>? subTemaFiscalizacao,
     Expression<String>? identificacao,
     Expression<String>? alimentador,
     Expression<String>? descricao,
     Expression<String>? image,
     Expression<String>? endereco,
+    Expression<String>? cidade,
     Expression<double>? lat,
     Expression<double>? long,
     Expression<DateTime>? horario,
+    Expression<bool>? emergencial,
     Expression<int>? status,
     Expression<int>? action,
     Expression<int>? rowid,
@@ -700,15 +850,19 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       if (evidenciaId != null) 'evidencia_id': evidenciaId,
       if (idRota != null) 'id_rota': idRota,
       if (idFiscal != null) 'id_fiscal': idFiscal,
-      if (tema != null) 'tema': tema,
+      if (temaFiscalizacao != null) 'tema_fiscalizacao': temaFiscalizacao,
+      if (subTemaFiscalizacao != null)
+        'sub_tema_fiscalizacao': subTemaFiscalizacao,
       if (identificacao != null) 'identificacao': identificacao,
       if (alimentador != null) 'alimentador': alimentador,
       if (descricao != null) 'descricao': descricao,
       if (image != null) 'image': image,
       if (endereco != null) 'endereco': endereco,
+      if (cidade != null) 'cidade': cidade,
       if (lat != null) 'lat': lat,
       if (long != null) 'long': long,
       if (horario != null) 'horario': horario,
+      if (emergencial != null) 'emergencial': emergencial,
       if (status != null) 'status': status,
       if (action != null) 'action': action,
       if (rowid != null) 'rowid': rowid,
@@ -717,17 +871,20 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
 
   EvidenciastableCompanion copyWith({
     Value<String>? evidenciaId,
-    Value<int>? idRota,
-    Value<int>? idFiscal,
-    Value<TipoConstatacao>? tema,
+    Value<String>? idRota,
+    Value<int?>? idFiscal,
+    Value<int?>? temaFiscalizacao,
+    Value<String?>? subTemaFiscalizacao,
     Value<String?>? identificacao,
     Value<String?>? alimentador,
-    Value<String>? descricao,
-    Value<String>? image,
-    Value<String>? endereco,
-    Value<double>? lat,
-    Value<double>? long,
-    Value<DateTime>? horario,
+    Value<String?>? descricao,
+    Value<String?>? image,
+    Value<String?>? endereco,
+    Value<String?>? cidade,
+    Value<double?>? lat,
+    Value<double?>? long,
+    Value<DateTime?>? horario,
+    Value<bool>? emergencial,
     Value<StatusMode>? status,
     Value<SharedMode>? action,
     Value<int>? rowid,
@@ -736,15 +893,18 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       evidenciaId: evidenciaId ?? this.evidenciaId,
       idRota: idRota ?? this.idRota,
       idFiscal: idFiscal ?? this.idFiscal,
-      tema: tema ?? this.tema,
+      temaFiscalizacao: temaFiscalizacao ?? this.temaFiscalizacao,
+      subTemaFiscalizacao: subTemaFiscalizacao ?? this.subTemaFiscalizacao,
       identificacao: identificacao ?? this.identificacao,
       alimentador: alimentador ?? this.alimentador,
       descricao: descricao ?? this.descricao,
       image: image ?? this.image,
       endereco: endereco ?? this.endereco,
+      cidade: cidade ?? this.cidade,
       lat: lat ?? this.lat,
       long: long ?? this.long,
       horario: horario ?? this.horario,
+      emergencial: emergencial ?? this.emergencial,
       status: status ?? this.status,
       action: action ?? this.action,
       rowid: rowid ?? this.rowid,
@@ -758,14 +918,17 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
       map['evidencia_id'] = Variable<String>(evidenciaId.value);
     }
     if (idRota.present) {
-      map['id_rota'] = Variable<int>(idRota.value);
+      map['id_rota'] = Variable<String>(idRota.value);
     }
     if (idFiscal.present) {
       map['id_fiscal'] = Variable<int>(idFiscal.value);
     }
-    if (tema.present) {
-      map['tema'] = Variable<int>(
-        $EvidenciastableTable.$convertertema.toSql(tema.value),
+    if (temaFiscalizacao.present) {
+      map['tema_fiscalizacao'] = Variable<int>(temaFiscalizacao.value);
+    }
+    if (subTemaFiscalizacao.present) {
+      map['sub_tema_fiscalizacao'] = Variable<String>(
+        subTemaFiscalizacao.value,
       );
     }
     if (identificacao.present) {
@@ -783,6 +946,9 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     if (endereco.present) {
       map['endereco'] = Variable<String>(endereco.value);
     }
+    if (cidade.present) {
+      map['cidade'] = Variable<String>(cidade.value);
+    }
     if (lat.present) {
       map['lat'] = Variable<double>(lat.value);
     }
@@ -791,6 +957,9 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
     }
     if (horario.present) {
       map['horario'] = Variable<DateTime>(horario.value);
+    }
+    if (emergencial.present) {
+      map['emergencial'] = Variable<bool>(emergencial.value);
     }
     if (status.present) {
       map['status'] = Variable<int>(
@@ -814,15 +983,18 @@ class EvidenciastableCompanion extends UpdateCompanion<EvidenciastableData> {
           ..write('evidenciaId: $evidenciaId, ')
           ..write('idRota: $idRota, ')
           ..write('idFiscal: $idFiscal, ')
-          ..write('tema: $tema, ')
+          ..write('temaFiscalizacao: $temaFiscalizacao, ')
+          ..write('subTemaFiscalizacao: $subTemaFiscalizacao, ')
           ..write('identificacao: $identificacao, ')
           ..write('alimentador: $alimentador, ')
           ..write('descricao: $descricao, ')
           ..write('image: $image, ')
           ..write('endereco: $endereco, ')
+          ..write('cidade: $cidade, ')
           ..write('lat: $lat, ')
           ..write('long: $long, ')
           ..write('horario: $horario, ')
+          ..write('emergencial: $emergencial, ')
           ..write('status: $status, ')
           ..write('action: $action, ')
           ..write('rowid: $rowid')
@@ -839,12 +1011,12 @@ class $RotastableTable extends Rotastable
   $RotastableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idRotaMeta = const VerificationMeta('idRota');
   @override
-  late final GeneratedColumn<int> idRota = GeneratedColumn<int>(
+  late final GeneratedColumn<String> idRota = GeneratedColumn<String>(
     'id_rota',
     aliasedName,
     false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _nomeRotaMeta = const VerificationMeta(
     'nomeRota',
@@ -880,11 +1052,32 @@ class $RotastableTable extends Rotastable
     requiredDuringInsert: true,
   );
   @override
+  late final GeneratedColumnWithTypeConverter<Conc, int> conc =
+      GeneratedColumn<int>(
+        'conc',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<Conc>($RotastableTable.$converterconc);
+  static const VerificationMeta _kmMeta = const VerificationMeta('km');
+  @override
+  late final GeneratedColumn<double> km = GeneratedColumn<double>(
+    'km',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     idRota,
     nomeRota,
     alimentador,
     dataInicio,
+    conc,
+    km,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -903,6 +1096,8 @@ class $RotastableTable extends Rotastable
         _idRotaMeta,
         idRota.isAcceptableOrUnknown(data['id_rota']!, _idRotaMeta),
       );
+    } else if (isInserting) {
+      context.missing(_idRotaMeta);
     }
     if (data.containsKey('nome_rota')) {
       context.handle(
@@ -931,6 +1126,9 @@ class $RotastableTable extends Rotastable
     } else if (isInserting) {
       context.missing(_dataInicioMeta);
     }
+    if (data.containsKey('km')) {
+      context.handle(_kmMeta, km.isAcceptableOrUnknown(data['km']!, _kmMeta));
+    }
     return context;
   }
 
@@ -941,7 +1139,7 @@ class $RotastableTable extends Rotastable
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return RotastableData(
       idRota: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}id_rota'],
       )!,
       nomeRota: attachedDatabase.typeMapping.read(
@@ -956,6 +1154,16 @@ class $RotastableTable extends Rotastable
         DriftSqlType.string,
         data['${effectivePrefix}data_inicio'],
       )!,
+      conc: $RotastableTable.$converterconc.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}conc'],
+        )!,
+      ),
+      km: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}km'],
+      ),
     );
   }
 
@@ -963,26 +1171,39 @@ class $RotastableTable extends Rotastable
   $RotastableTable createAlias(String alias) {
     return $RotastableTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<Conc, int, int> $converterconc =
+      const EnumIndexConverter<Conc>(Conc.values);
 }
 
 class RotastableData extends DataClass implements Insertable<RotastableData> {
-  final int idRota;
+  final String idRota;
   final String nomeRota;
   final String alimentador;
   final String dataInicio;
+  final Conc conc;
+  final double? km;
   const RotastableData({
     required this.idRota,
     required this.nomeRota,
     required this.alimentador,
     required this.dataInicio,
+    required this.conc,
+    this.km,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id_rota'] = Variable<int>(idRota);
+    map['id_rota'] = Variable<String>(idRota);
     map['nome_rota'] = Variable<String>(nomeRota);
     map['alimentador'] = Variable<String>(alimentador);
     map['data_inicio'] = Variable<String>(dataInicio);
+    {
+      map['conc'] = Variable<int>($RotastableTable.$converterconc.toSql(conc));
+    }
+    if (!nullToAbsent || km != null) {
+      map['km'] = Variable<double>(km);
+    }
     return map;
   }
 
@@ -992,6 +1213,8 @@ class RotastableData extends DataClass implements Insertable<RotastableData> {
       nomeRota: Value(nomeRota),
       alimentador: Value(alimentador),
       dataInicio: Value(dataInicio),
+      conc: Value(conc),
+      km: km == null && nullToAbsent ? const Value.absent() : Value(km),
     );
   }
 
@@ -1001,33 +1224,45 @@ class RotastableData extends DataClass implements Insertable<RotastableData> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return RotastableData(
-      idRota: serializer.fromJson<int>(json['idRota']),
+      idRota: serializer.fromJson<String>(json['idRota']),
       nomeRota: serializer.fromJson<String>(json['nomeRota']),
       alimentador: serializer.fromJson<String>(json['alimentador']),
       dataInicio: serializer.fromJson<String>(json['dataInicio']),
+      conc: $RotastableTable.$converterconc.fromJson(
+        serializer.fromJson<int>(json['conc']),
+      ),
+      km: serializer.fromJson<double?>(json['km']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'idRota': serializer.toJson<int>(idRota),
+      'idRota': serializer.toJson<String>(idRota),
       'nomeRota': serializer.toJson<String>(nomeRota),
       'alimentador': serializer.toJson<String>(alimentador),
       'dataInicio': serializer.toJson<String>(dataInicio),
+      'conc': serializer.toJson<int>(
+        $RotastableTable.$converterconc.toJson(conc),
+      ),
+      'km': serializer.toJson<double?>(km),
     };
   }
 
   RotastableData copyWith({
-    int? idRota,
+    String? idRota,
     String? nomeRota,
     String? alimentador,
     String? dataInicio,
+    Conc? conc,
+    Value<double?> km = const Value.absent(),
   }) => RotastableData(
     idRota: idRota ?? this.idRota,
     nomeRota: nomeRota ?? this.nomeRota,
     alimentador: alimentador ?? this.alimentador,
     dataInicio: dataInicio ?? this.dataInicio,
+    conc: conc ?? this.conc,
+    km: km.present ? km.value : this.km,
   );
   RotastableData copyWithCompanion(RotastableCompanion data) {
     return RotastableData(
@@ -1039,6 +1274,8 @@ class RotastableData extends DataClass implements Insertable<RotastableData> {
       dataInicio: data.dataInicio.present
           ? data.dataInicio.value
           : this.dataInicio,
+      conc: data.conc.present ? data.conc.value : this.conc,
+      km: data.km.present ? data.km.value : this.km,
     );
   }
 
@@ -1048,13 +1285,16 @@ class RotastableData extends DataClass implements Insertable<RotastableData> {
           ..write('idRota: $idRota, ')
           ..write('nomeRota: $nomeRota, ')
           ..write('alimentador: $alimentador, ')
-          ..write('dataInicio: $dataInicio')
+          ..write('dataInicio: $dataInicio, ')
+          ..write('conc: $conc, ')
+          ..write('km: $km')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(idRota, nomeRota, alimentador, dataInicio);
+  int get hashCode =>
+      Object.hash(idRota, nomeRota, alimentador, dataInicio, conc, km);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1062,53 +1302,77 @@ class RotastableData extends DataClass implements Insertable<RotastableData> {
           other.idRota == this.idRota &&
           other.nomeRota == this.nomeRota &&
           other.alimentador == this.alimentador &&
-          other.dataInicio == this.dataInicio);
+          other.dataInicio == this.dataInicio &&
+          other.conc == this.conc &&
+          other.km == this.km);
 }
 
 class RotastableCompanion extends UpdateCompanion<RotastableData> {
-  final Value<int> idRota;
+  final Value<String> idRota;
   final Value<String> nomeRota;
   final Value<String> alimentador;
   final Value<String> dataInicio;
+  final Value<Conc> conc;
+  final Value<double?> km;
+  final Value<int> rowid;
   const RotastableCompanion({
     this.idRota = const Value.absent(),
     this.nomeRota = const Value.absent(),
     this.alimentador = const Value.absent(),
     this.dataInicio = const Value.absent(),
+    this.conc = const Value.absent(),
+    this.km = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   RotastableCompanion.insert({
-    this.idRota = const Value.absent(),
+    required String idRota,
     required String nomeRota,
     required String alimentador,
     required String dataInicio,
-  }) : nomeRota = Value(nomeRota),
+    this.conc = const Value.absent(),
+    this.km = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : idRota = Value(idRota),
+       nomeRota = Value(nomeRota),
        alimentador = Value(alimentador),
        dataInicio = Value(dataInicio);
   static Insertable<RotastableData> custom({
-    Expression<int>? idRota,
+    Expression<String>? idRota,
     Expression<String>? nomeRota,
     Expression<String>? alimentador,
     Expression<String>? dataInicio,
+    Expression<int>? conc,
+    Expression<double>? km,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (idRota != null) 'id_rota': idRota,
       if (nomeRota != null) 'nome_rota': nomeRota,
       if (alimentador != null) 'alimentador': alimentador,
       if (dataInicio != null) 'data_inicio': dataInicio,
+      if (conc != null) 'conc': conc,
+      if (km != null) 'km': km,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   RotastableCompanion copyWith({
-    Value<int>? idRota,
+    Value<String>? idRota,
     Value<String>? nomeRota,
     Value<String>? alimentador,
     Value<String>? dataInicio,
+    Value<Conc>? conc,
+    Value<double?>? km,
+    Value<int>? rowid,
   }) {
     return RotastableCompanion(
       idRota: idRota ?? this.idRota,
       nomeRota: nomeRota ?? this.nomeRota,
       alimentador: alimentador ?? this.alimentador,
       dataInicio: dataInicio ?? this.dataInicio,
+      conc: conc ?? this.conc,
+      km: km ?? this.km,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -1116,7 +1380,7 @@ class RotastableCompanion extends UpdateCompanion<RotastableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (idRota.present) {
-      map['id_rota'] = Variable<int>(idRota.value);
+      map['id_rota'] = Variable<String>(idRota.value);
     }
     if (nomeRota.present) {
       map['nome_rota'] = Variable<String>(nomeRota.value);
@@ -1127,6 +1391,17 @@ class RotastableCompanion extends UpdateCompanion<RotastableData> {
     if (dataInicio.present) {
       map['data_inicio'] = Variable<String>(dataInicio.value);
     }
+    if (conc.present) {
+      map['conc'] = Variable<int>(
+        $RotastableTable.$converterconc.toSql(conc.value),
+      );
+    }
+    if (km.present) {
+      map['km'] = Variable<double>(km.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -1136,7 +1411,10 @@ class RotastableCompanion extends UpdateCompanion<RotastableData> {
           ..write('idRota: $idRota, ')
           ..write('nomeRota: $nomeRota, ')
           ..write('alimentador: $alimentador, ')
-          ..write('dataInicio: $dataInicio')
+          ..write('dataInicio: $dataInicio, ')
+          ..write('conc: $conc, ')
+          ..write('km: $km, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -1162,17 +1440,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$EvidenciastableTableCreateCompanionBuilder =
     EvidenciastableCompanion Function({
       required String evidenciaId,
-      required int idRota,
-      required int idFiscal,
-      Value<TipoConstatacao> tema,
+      required String idRota,
+      Value<int?> idFiscal,
+      Value<int?> temaFiscalizacao,
+      Value<String?> subTemaFiscalizacao,
       Value<String?> identificacao,
       Value<String?> alimentador,
-      required String descricao,
-      required String image,
-      required String endereco,
-      required double lat,
-      required double long,
-      Value<DateTime> horario,
+      Value<String?> descricao,
+      Value<String?> image,
+      Value<String?> endereco,
+      Value<String?> cidade,
+      Value<double?> lat,
+      Value<double?> long,
+      Value<DateTime?> horario,
+      Value<bool> emergencial,
       Value<StatusMode> status,
       Value<SharedMode> action,
       Value<int> rowid,
@@ -1180,17 +1461,20 @@ typedef $$EvidenciastableTableCreateCompanionBuilder =
 typedef $$EvidenciastableTableUpdateCompanionBuilder =
     EvidenciastableCompanion Function({
       Value<String> evidenciaId,
-      Value<int> idRota,
-      Value<int> idFiscal,
-      Value<TipoConstatacao> tema,
+      Value<String> idRota,
+      Value<int?> idFiscal,
+      Value<int?> temaFiscalizacao,
+      Value<String?> subTemaFiscalizacao,
       Value<String?> identificacao,
       Value<String?> alimentador,
-      Value<String> descricao,
-      Value<String> image,
-      Value<String> endereco,
-      Value<double> lat,
-      Value<double> long,
-      Value<DateTime> horario,
+      Value<String?> descricao,
+      Value<String?> image,
+      Value<String?> endereco,
+      Value<String?> cidade,
+      Value<double?> lat,
+      Value<double?> long,
+      Value<DateTime?> horario,
+      Value<bool> emergencial,
       Value<StatusMode> status,
       Value<SharedMode> action,
       Value<int> rowid,
@@ -1210,7 +1494,7 @@ class $$EvidenciastableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get idRota => $composableBuilder(
+  ColumnFilters<String> get idRota => $composableBuilder(
     column: $table.idRota,
     builder: (column) => ColumnFilters(column),
   );
@@ -1220,10 +1504,14 @@ class $$EvidenciastableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<TipoConstatacao, TipoConstatacao, int>
-  get tema => $composableBuilder(
-    column: $table.tema,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
+  ColumnFilters<int> get temaFiscalizacao => $composableBuilder(
+    column: $table.temaFiscalizacao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subTemaFiscalizacao => $composableBuilder(
+    column: $table.subTemaFiscalizacao,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get identificacao => $composableBuilder(
@@ -1251,6 +1539,11 @@ class $$EvidenciastableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get cidade => $composableBuilder(
+    column: $table.cidade,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<double> get lat => $composableBuilder(
     column: $table.lat,
     builder: (column) => ColumnFilters(column),
@@ -1263,6 +1556,11 @@ class $$EvidenciastableTableFilterComposer
 
   ColumnFilters<DateTime> get horario => $composableBuilder(
     column: $table.horario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get emergencial => $composableBuilder(
+    column: $table.emergencial,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1293,7 +1591,7 @@ class $$EvidenciastableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get idRota => $composableBuilder(
+  ColumnOrderings<String> get idRota => $composableBuilder(
     column: $table.idRota,
     builder: (column) => ColumnOrderings(column),
   );
@@ -1303,8 +1601,13 @@ class $$EvidenciastableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get tema => $composableBuilder(
-    column: $table.tema,
+  ColumnOrderings<int> get temaFiscalizacao => $composableBuilder(
+    column: $table.temaFiscalizacao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subTemaFiscalizacao => $composableBuilder(
+    column: $table.subTemaFiscalizacao,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1333,6 +1636,11 @@ class $$EvidenciastableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cidade => $composableBuilder(
+    column: $table.cidade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get lat => $composableBuilder(
     column: $table.lat,
     builder: (column) => ColumnOrderings(column),
@@ -1345,6 +1653,11 @@ class $$EvidenciastableTableOrderingComposer
 
   ColumnOrderings<DateTime> get horario => $composableBuilder(
     column: $table.horario,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get emergencial => $composableBuilder(
+    column: $table.emergencial,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1373,14 +1686,21 @@ class $$EvidenciastableTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<int> get idRota =>
+  GeneratedColumn<String> get idRota =>
       $composableBuilder(column: $table.idRota, builder: (column) => column);
 
   GeneratedColumn<int> get idFiscal =>
       $composableBuilder(column: $table.idFiscal, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<TipoConstatacao, int> get tema =>
-      $composableBuilder(column: $table.tema, builder: (column) => column);
+  GeneratedColumn<int> get temaFiscalizacao => $composableBuilder(
+    column: $table.temaFiscalizacao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get subTemaFiscalizacao => $composableBuilder(
+    column: $table.subTemaFiscalizacao,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get identificacao => $composableBuilder(
     column: $table.identificacao,
@@ -1401,6 +1721,9 @@ class $$EvidenciastableTableAnnotationComposer
   GeneratedColumn<String> get endereco =>
       $composableBuilder(column: $table.endereco, builder: (column) => column);
 
+  GeneratedColumn<String> get cidade =>
+      $composableBuilder(column: $table.cidade, builder: (column) => column);
+
   GeneratedColumn<double> get lat =>
       $composableBuilder(column: $table.lat, builder: (column) => column);
 
@@ -1409,6 +1732,11 @@ class $$EvidenciastableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get horario =>
       $composableBuilder(column: $table.horario, builder: (column) => column);
+
+  GeneratedColumn<bool> get emergencial => $composableBuilder(
+    column: $table.emergencial,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<StatusMode, int> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
@@ -1455,17 +1783,20 @@ class $$EvidenciastableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> evidenciaId = const Value.absent(),
-                Value<int> idRota = const Value.absent(),
-                Value<int> idFiscal = const Value.absent(),
-                Value<TipoConstatacao> tema = const Value.absent(),
+                Value<String> idRota = const Value.absent(),
+                Value<int?> idFiscal = const Value.absent(),
+                Value<int?> temaFiscalizacao = const Value.absent(),
+                Value<String?> subTemaFiscalizacao = const Value.absent(),
                 Value<String?> identificacao = const Value.absent(),
                 Value<String?> alimentador = const Value.absent(),
-                Value<String> descricao = const Value.absent(),
-                Value<String> image = const Value.absent(),
-                Value<String> endereco = const Value.absent(),
-                Value<double> lat = const Value.absent(),
-                Value<double> long = const Value.absent(),
-                Value<DateTime> horario = const Value.absent(),
+                Value<String?> descricao = const Value.absent(),
+                Value<String?> image = const Value.absent(),
+                Value<String?> endereco = const Value.absent(),
+                Value<String?> cidade = const Value.absent(),
+                Value<double?> lat = const Value.absent(),
+                Value<double?> long = const Value.absent(),
+                Value<DateTime?> horario = const Value.absent(),
+                Value<bool> emergencial = const Value.absent(),
                 Value<StatusMode> status = const Value.absent(),
                 Value<SharedMode> action = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1473,15 +1804,18 @@ class $$EvidenciastableTableTableManager
                 evidenciaId: evidenciaId,
                 idRota: idRota,
                 idFiscal: idFiscal,
-                tema: tema,
+                temaFiscalizacao: temaFiscalizacao,
+                subTemaFiscalizacao: subTemaFiscalizacao,
                 identificacao: identificacao,
                 alimentador: alimentador,
                 descricao: descricao,
                 image: image,
                 endereco: endereco,
+                cidade: cidade,
                 lat: lat,
                 long: long,
                 horario: horario,
+                emergencial: emergencial,
                 status: status,
                 action: action,
                 rowid: rowid,
@@ -1489,17 +1823,20 @@ class $$EvidenciastableTableTableManager
           createCompanionCallback:
               ({
                 required String evidenciaId,
-                required int idRota,
-                required int idFiscal,
-                Value<TipoConstatacao> tema = const Value.absent(),
+                required String idRota,
+                Value<int?> idFiscal = const Value.absent(),
+                Value<int?> temaFiscalizacao = const Value.absent(),
+                Value<String?> subTemaFiscalizacao = const Value.absent(),
                 Value<String?> identificacao = const Value.absent(),
                 Value<String?> alimentador = const Value.absent(),
-                required String descricao,
-                required String image,
-                required String endereco,
-                required double lat,
-                required double long,
-                Value<DateTime> horario = const Value.absent(),
+                Value<String?> descricao = const Value.absent(),
+                Value<String?> image = const Value.absent(),
+                Value<String?> endereco = const Value.absent(),
+                Value<String?> cidade = const Value.absent(),
+                Value<double?> lat = const Value.absent(),
+                Value<double?> long = const Value.absent(),
+                Value<DateTime?> horario = const Value.absent(),
+                Value<bool> emergencial = const Value.absent(),
                 Value<StatusMode> status = const Value.absent(),
                 Value<SharedMode> action = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1507,15 +1844,18 @@ class $$EvidenciastableTableTableManager
                 evidenciaId: evidenciaId,
                 idRota: idRota,
                 idFiscal: idFiscal,
-                tema: tema,
+                temaFiscalizacao: temaFiscalizacao,
+                subTemaFiscalizacao: subTemaFiscalizacao,
                 identificacao: identificacao,
                 alimentador: alimentador,
                 descricao: descricao,
                 image: image,
                 endereco: endereco,
+                cidade: cidade,
                 lat: lat,
                 long: long,
                 horario: horario,
+                emergencial: emergencial,
                 status: status,
                 action: action,
                 rowid: rowid,
@@ -1551,17 +1891,23 @@ typedef $$EvidenciastableTableProcessedTableManager =
     >;
 typedef $$RotastableTableCreateCompanionBuilder =
     RotastableCompanion Function({
-      Value<int> idRota,
+      required String idRota,
       required String nomeRota,
       required String alimentador,
       required String dataInicio,
+      Value<Conc> conc,
+      Value<double?> km,
+      Value<int> rowid,
     });
 typedef $$RotastableTableUpdateCompanionBuilder =
     RotastableCompanion Function({
-      Value<int> idRota,
+      Value<String> idRota,
       Value<String> nomeRota,
       Value<String> alimentador,
       Value<String> dataInicio,
+      Value<Conc> conc,
+      Value<double?> km,
+      Value<int> rowid,
     });
 
 class $$RotastableTableFilterComposer
@@ -1573,7 +1919,7 @@ class $$RotastableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get idRota => $composableBuilder(
+  ColumnFilters<String> get idRota => $composableBuilder(
     column: $table.idRota,
     builder: (column) => ColumnFilters(column),
   );
@@ -1592,6 +1938,17 @@ class $$RotastableTableFilterComposer
     column: $table.dataInicio,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<Conc, Conc, int> get conc =>
+      $composableBuilder(
+        column: $table.conc,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<double> get km => $composableBuilder(
+    column: $table.km,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$RotastableTableOrderingComposer
@@ -1603,7 +1960,7 @@ class $$RotastableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get idRota => $composableBuilder(
+  ColumnOrderings<String> get idRota => $composableBuilder(
     column: $table.idRota,
     builder: (column) => ColumnOrderings(column),
   );
@@ -1622,6 +1979,16 @@ class $$RotastableTableOrderingComposer
     column: $table.dataInicio,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get conc => $composableBuilder(
+    column: $table.conc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get km => $composableBuilder(
+    column: $table.km,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RotastableTableAnnotationComposer
@@ -1633,7 +2000,7 @@ class $$RotastableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get idRota =>
+  GeneratedColumn<String> get idRota =>
       $composableBuilder(column: $table.idRota, builder: (column) => column);
 
   GeneratedColumn<String> get nomeRota =>
@@ -1648,6 +2015,12 @@ class $$RotastableTableAnnotationComposer
     column: $table.dataInicio,
     builder: (column) => column,
   );
+
+  GeneratedColumnWithTypeConverter<Conc, int> get conc =>
+      $composableBuilder(column: $table.conc, builder: (column) => column);
+
+  GeneratedColumn<double> get km =>
+      $composableBuilder(column: $table.km, builder: (column) => column);
 }
 
 class $$RotastableTableTableManager
@@ -1681,27 +2054,39 @@ class $$RotastableTableTableManager
               $$RotastableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> idRota = const Value.absent(),
+                Value<String> idRota = const Value.absent(),
                 Value<String> nomeRota = const Value.absent(),
                 Value<String> alimentador = const Value.absent(),
                 Value<String> dataInicio = const Value.absent(),
+                Value<Conc> conc = const Value.absent(),
+                Value<double?> km = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => RotastableCompanion(
                 idRota: idRota,
                 nomeRota: nomeRota,
                 alimentador: alimentador,
                 dataInicio: dataInicio,
+                conc: conc,
+                km: km,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> idRota = const Value.absent(),
+                required String idRota,
                 required String nomeRota,
                 required String alimentador,
                 required String dataInicio,
+                Value<Conc> conc = const Value.absent(),
+                Value<double?> km = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => RotastableCompanion.insert(
                 idRota: idRota,
                 nomeRota: nomeRota,
                 alimentador: alimentador,
                 dataInicio: dataInicio,
+                conc: conc,
+                km: km,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
