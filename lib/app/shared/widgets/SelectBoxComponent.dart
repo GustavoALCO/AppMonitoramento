@@ -35,7 +35,8 @@ class Selectboxcomponent<T extends Enum> extends StatelessWidget {
 
         floatingLabelStyle: TextStyle(
           color: AppColors.secondary,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.bold,
+          fontSize: 22,
         ),
 
         focusedBorder: OutlineInputBorder(
@@ -47,7 +48,7 @@ class Selectboxcomponent<T extends Enum> extends StatelessWidget {
       items: values.map((item) {
         return DropdownMenuItem<T>(
           value: item,
-          child: Text(labelBuilder(item)),
+          child: Text(labelBuilder(item), style: const TextStyle(fontWeight: FontWeight.bold)),
         );
       }).toList(),
       onChanged: onChanged,

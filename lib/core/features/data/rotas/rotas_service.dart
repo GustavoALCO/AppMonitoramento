@@ -150,4 +150,19 @@ class RotasService {
     return response.statusCode.toString();
   }
 
+
+  Future<bool> finalizarRota(String rotaId) async {
+    // Faz a requisição PATCH para o endpoint de rotas, passando o ID da rota a ser finalizada
+    final response = await _apiClient.patch(
+      '${ApiRoutes.rota}/FinalizarRota',
+      body: {"rotaId": rotaId},
+      headers: {
+        "Authorization": "Bearer ${await jwt.returnToken()}",
+        "Content-Type": "application/json",
+      },
+    );
+
+    // Retorna True se a resposta da API for 200
+    return response.statusCode == 200;
+  }
 }

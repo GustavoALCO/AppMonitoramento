@@ -9,8 +9,10 @@ import 'package:monitoramento/app/shared/enums/enumStatusMode.dart';
 import 'package:monitoramento/app/shared/enums/enumTemaFiscalicacao.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 import 'package:monitoramento/app/shared/widgets/AppBarComponent.dart';
+import 'package:monitoramento/app/shared/widgets/ButtonDeploy.dart';
 import 'package:monitoramento/app/shared/widgets/ListRevisaoComponent.dart';
 import 'package:monitoramento/core/features/data/evidencias/evidencias_service.dart';
+import 'package:monitoramento/core/features/data/rotas/rotas_service.dart';
 import 'package:monitoramento/core/features/models/evidencias/evidencias_model.dart';
 import 'package:monitoramento/core/network/api_client.dart';
 import 'package:monitoramento/core/services/bd_evidencias_service.dart';
@@ -31,6 +33,7 @@ class _RevisaopageState extends State<Revisaopage> {
   late BdEvidenciasService _service;
   late ApiClient _apiClient;
   late EvidenciasService _evidenciasService;
+  late RotasService _rotasService;
   late TokenService _tokenService;
 
   List<EvidenciaCardDto> revisoes = [];
@@ -53,6 +56,7 @@ class _RevisaopageState extends State<Revisaopage> {
 
     _apiClient = ApiClient();
     _evidenciasService = EvidenciasService(_apiClient);
+    _rotasService = RotasService(_apiClient);
     _service = BdEvidenciasService();
     _tokenService = TokenService();
 
@@ -69,6 +73,63 @@ class _RevisaopageState extends State<Revisaopage> {
         carregarMais();
       }
     });
+  }
+
+  void _finalizar(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text(
+          "Confirmar finalização",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+
+        content: const Text("Deseja realmente finalizar esta revisão?"),
+
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+
+            child: const Text(
+              "Cancelar",
+              style: TextStyle(color: AppColors.secondary),
+            ),
+          ),
+
+          TextButton(
+            onPressed: () {
+              _rotasService.finalizarRota(widget.id);
+
+              Navigator.pop(context);
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  "Finalizar",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 0.5
+                      ..color = AppColors.secondary,
+                  ),
+                ),
+                const Text(
+                  "Finalizar",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -196,7 +257,6 @@ class _RevisaopageState extends State<Revisaopage> {
       }
       listaTemp.add(
         EvidenciaCardDto(
-
           idEvi: evi.evidenciaId,
           rotaId: evi.idRota,
           fiscal: fiscal,
@@ -212,10 +272,10 @@ class _RevisaopageState extends State<Revisaopage> {
           tema: TemaFiscalizacao.values[evi.temaFiscalizacao ?? 0],
           //TEMPORARIO
           subTema: evi.subTemaFiscalizacao != null
-          ? (jsonDecode(evi.subTemaFiscalizacao!) as List)
-              .map((e) => SubTemaFiscalizacao.values[e as int])
-              .toList()
-          : [],
+              ? (jsonDecode(evi.subTemaFiscalizacao!) as List)
+                    .map((e) => SubTemaFiscalizacao.values[e as int])
+                    .toList()
+              : [],
           status: StatusMode.local,
           emergencial: evi.emergencial,
         ),
@@ -281,33 +341,54 @@ class _RevisaopageState extends State<Revisaopage> {
     return Scaffold(
       appBar: AppbarComponent("Revisão", false),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Builder(
-          builder: (_) {
-            if (isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        padding: const EdgeInsets.fromLTRB(16, 5, 16, 10),
+        child: Column(
+          children: [
+            if (widget.isfiniched != true) ...[
+              const SizedBox(height: 16),
+              Buttondeploy(
+                text: "Finalizar Rota",
+                onPressed: () {
+                  _finalizar(context);
+                },
+                select: true,
+                iconEnabled: false,
+                padding: 5,
+              ),
+              const SizedBox(height: 10),
+            ],
+            Expanded(
+              child: Builder(
+                builder: (_) {
+                  if (isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-            if (revisoes.isEmpty) {
-              return const Center(child: Text("Nenhuma evidência encontrada"));
-            }
+                  if (revisoes.isEmpty) {
+                    return const Center(
+                      child: Text("Nenhuma evidência encontrada"),
+                    );
+                  }
 
-            return ListRevisaoComponent(
-              revisoes: revisoes,
-              onDelete: _excluirEvidencia,
-              controller: _scrollController,
-              isLoadingMore: isLoadingMore,
-            );
-          },
+                  return ListRevisaoComponent(
+                    revisoes: revisoes,
+                    onDelete: _excluirEvidencia,
+                    controller: _scrollController,
+                    isLoadingMore: isLoadingMore,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: widget.isfiniched == true
-    ? null
-    : FloatingActionButton(
-        onPressed: _abrirCriarEvidencia,
-        backgroundColor: AppColors.cards,
-        child: const Icon(Icons.add, color: AppColors.secondary),
-      ),
+          ? null
+          : FloatingActionButton(
+              onPressed: _abrirCriarEvidencia,
+              backgroundColor: AppColors.cards,
+              child: const Icon(Icons.add, color: AppColors.secondary),
+            ),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:monitoramento/app/shared/utils/AppColors.dart';
 
-
 class NavigationButton extends StatelessWidget {
   final String label;
   final bool selected;
@@ -18,22 +17,18 @@ class NavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        elevation: selected ? 6 : 6,
-        backgroundColor:
-            selected ? AppColors.primary : Colors.grey.shade300,
-        foregroundColor: selected ? AppColors.cards : Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        ),
+        elevation: 6,
+        backgroundColor: selected ? AppColors.primary : AppColors.secondary,
+        foregroundColor: selected ? AppColors.secondary : AppColors.cards,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         minimumSize: const Size(double.infinity, 44),
+        side: BorderSide(
+          color: Colors.black,
+          width: 0.5,
+        ),
       ),
       onPressed: onPressed,
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 }

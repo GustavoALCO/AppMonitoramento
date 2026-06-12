@@ -18,7 +18,7 @@ class AppbarComponent extends StatelessWidget implements PreferredSizeWidget {
 
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.cards),
+          icon: const Icon(Icons.menu, color: AppColors.secondary),
           onPressed: () {
             Scaffold.of(context).openDrawer();
           },
@@ -31,14 +31,14 @@ class AppbarComponent extends StatelessWidget implements PreferredSizeWidget {
         style: const TextStyle(
           fontSize: 20.0,
           fontWeight: FontWeight.bold,
-          color: AppColors.cards
+          color: AppColors.secondary
         ),
       ),
 
       actions: [
         if (logoff)
           IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.cards),
+            icon: const Icon(Icons.logout, color: AppColors.secondary),
             onPressed: () {
               _tokenService.deleteToken();
               Navigator.pushReplacementNamed(context, "/login");

@@ -51,6 +51,10 @@ class _InputshowuserscomponentsState
                   // 🔹 Título
                   Text(
                     widget.label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.secondary,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -70,6 +74,7 @@ class _InputshowuserscomponentsState
                             item.nome,
                             style: TextStyle(
                               color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
 
@@ -134,6 +139,10 @@ class _InputshowuserscomponentsState
         // 🔹 Label igual InputComponent
         Text(
           widget.label,
+          style: TextStyle(
+            color: AppColors.secondary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
 
         // 🔹 Campo
@@ -156,7 +165,7 @@ class _InputshowuserscomponentsState
                   : "${_selecionados.length} selecionado(s)",
               style: TextStyle(
                 color: AppColors.secondary,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

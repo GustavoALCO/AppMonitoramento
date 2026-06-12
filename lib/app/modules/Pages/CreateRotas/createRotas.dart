@@ -132,7 +132,7 @@ class _CreaterotasState extends State<Createrotas> {
                       "Escolher usuários",
                       style: TextStyle(
                         color: AppColors.secondary,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
@@ -172,7 +172,7 @@ class _CreaterotasState extends State<Createrotas> {
     );
   }
 
-  void _salvarRota() {
+  Future<void> _salvarRota() async {
     final nomeRota = nomeRotaController.text;
     final alimentador = alimentadorController.text;
 
@@ -203,13 +203,17 @@ class _CreaterotasState extends State<Createrotas> {
         ),
       );
 
+      await Future.delayed(const Duration(seconds: 3));
+
       Navigator.popAndPushNamed(
+        // ignore: use_build_context_synchronously
         context,
         "/rotas",
         arguments: jwt.getIdPayload(), 
       );
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(const SnackBar(content: Text("Erro ao salvar evidência")));
     }

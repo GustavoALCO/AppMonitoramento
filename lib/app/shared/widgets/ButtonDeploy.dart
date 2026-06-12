@@ -6,26 +6,30 @@ class Buttondeploy extends StatelessWidget {
   final String text;
   final bool select;
   final bool iconEnabled;
+  final double? padding;
 
   const Buttondeploy({
     this.onPressed,
     required this.text,
     required this.select,
     required this.iconEnabled,
+    this.padding,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: padding ?? 0),
+      child: ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         elevation: 6,
         shadowColor: Colors.black,
         backgroundColor:
-            select ? AppColors.secondary : AppColors.cards,
+            select ? AppColors.primary : AppColors.secondary,
         foregroundColor:
-            select ? AppColors.cards : AppColors.secondary,
+            select ? AppColors.secondary : AppColors.cards,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
@@ -52,6 +56,7 @@ class Buttondeploy extends StatelessWidget {
           ),
         ],
       ),
+    )
     );
   }
 }

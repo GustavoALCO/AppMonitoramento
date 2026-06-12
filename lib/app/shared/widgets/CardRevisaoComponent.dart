@@ -181,8 +181,9 @@ class CardRevisaoComponent extends StatelessWidget {
                 child: Text(
                   "$count",
                   style: const TextStyle(
-                    color: AppColors.cards,
+                    color: AppColors.secondary,
                     fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
                 ),
               ),

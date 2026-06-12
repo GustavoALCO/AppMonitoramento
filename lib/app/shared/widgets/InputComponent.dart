@@ -22,7 +22,7 @@ class InputComponent extends StatelessWidget {
         labelText: label,
         labelStyle: TextStyle(
           color: AppColors.secondary,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.bold,
         ),
 
         filled: true, // ativa o background

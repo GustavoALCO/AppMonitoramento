@@ -1,14 +1,17 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 
 class ApiConfig {
   static Dio get client {
-    // Instancia o Dio para fazer a requisição HTTP
     final dio = Dio();
 
-    // Configura a URL base para as requisições
-    dio.options.baseUrl = 'https://c6e4-177-95-171-248.ngrok-free.app';
+    dio.options.baseUrl = 'https://68.211.162.64';
 
-    // Retorna a instância do Dio configurada
+    (dio.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+    };
+
     return dio;
   }
 }
